@@ -10,7 +10,9 @@ set buildNamespace			[lindex $argv 4]
 
 spawn csession $environment -U $namespace 
 
-printenv
+echo 'HS Cred is: $HS_CREDENTIALS'
+echo 'HS User is: $HS_CREDENTIALS_USR'
+echo 'HS Pass is: $HS_CREDENTIALS_PSW'
 
 expect "Username:" { send "$HS_CREDENTIALS_USR\r" } timeout { exit 1 }
 expect "Password:" { send "$HS_CREDENTIALS_PSW\r" } timeout { exit 1 }

@@ -22,7 +22,9 @@ pipeline {
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
 				
+				sh "echo 'HS Cred is: $HS_CREDENTIALS'"
 				sh "echo 'HS User is: $HS_CREDENTIALS_USR'"
+				sh "echo 'HS Pass is: $HS_CREDENTIALS_PSW'"
 				
 				sh "./buildInstallerNamespace.sh ${HS_BuildInstance} '${WORKSPACE}' '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace}"
 			}
