@@ -18,7 +18,7 @@ pipeline {
             steps {
                 //sh "rm -rf ${HS_BuildTargetFolder}"
 				//sh "mkdir ${HS_BuildTargetFolder}"
-                sh "cd ${WORKSPACE}"
+                sh 'cd "${WORKSPACE}"'
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x build/*.sh"
 				sh "./buildInstallerNamespace ${HS_BuildInstance} ${WORKSPACE} '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace}"
@@ -36,7 +36,7 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                deploy_loop(HS_List)
+                deploy_loop(${HS_List})
             }
         }
     }
