@@ -1,17 +1,17 @@
+
+def HS_List = ['localhost:56778','localhost:56778']
+def HS_BuildTargetFolder = '/opt/VABUILD/'
+def HS_BuildInstance = 'HS01'
+def HS_BuildNamespace = 'VABUILD'
+def HS_SourceBranch = 'develop'
+def HS_IntBranch = 'int/develop'
+
+
 pipeline {
     agent any
 	environment {
         HS_CREDENTIALS = credentials('HealthShare-Credentials')
     }
-	
-	HS_List = ['localhost:56778','localhost:56778']
-	HS_BuildTargetFolder = '/opt/VABUILD/'
-	HS_BuildInstance = HS01
-	HS_BuildNamespace = "VABUILD"
-	HS_SourceBranch = 'develop'
-	HS_IntBranch = 'int/develop'
-	
-
 	
     stages {
         stage('Prepare Build Environment') {
