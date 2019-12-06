@@ -16,8 +16,8 @@ pipeline {
     stages {
         stage('Prepare Build Environment') {
             steps {
-                sh "rm -rf ${HS_BuildTargetFolder}"
-				sh "mkdir ${HS_BuildTargetFolder}"
+                //sh "rm -rf ${HS_BuildTargetFolder}"
+				//sh "mkdir ${HS_BuildTargetFolder}"
                 sh "cd ${WORKSPACE}"
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x build/*.sh"
