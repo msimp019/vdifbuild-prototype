@@ -20,7 +20,7 @@ pipeline {
 				//sh "mkdir ${HS_BuildTargetFolder}"
                 sh 'cd "${WORKSPACE}"'
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
-                sh "chmod a+x build/*.sh"
+                sh "chmod a+x *.sh"
 				sh "./buildInstallerNamespace ${HS_BuildInstance} ${WORKSPACE} '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace}"
 			}
         }
