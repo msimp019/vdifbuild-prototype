@@ -7,15 +7,13 @@ set workspace     			[lindex $argv 1]
 set namespace     			[lindex $argv 2]
 set buildTargetFolder		[lindex $argv 3]
 set buildNamespace			[lindex $argv 4]
+set userName				[lindex $argv 5]
+set password				[lindex $argv 6]
 
 spawn csession $environment -U $namespace 
 
-echo 'HS Cred is: $HS_CREDENTIALS'
-echo 'HS User is: $HS_CREDENTIALS_USR'
-echo 'HS Pass is: $HS_CREDENTIALS_PSW'
-
-expect "Username:" { send "$HS_CREDENTIALS_USR\r" } timeout { exit 1 }
-expect "Password:" { send "$HS_CREDENTIALS_PSW\r" } timeout { exit 1 }
+expect "Username:" { send "$userName\r" } timeout { exit 1 }
+expect "Password:" { send "$password\r" } timeout { exit 1 }
 
 # Remove previous HealthShare classes
 # expect "${namespace}>" { send "Do ##class(%SYSTEM.OBJ).Delete(\"HS.Local.VA*\")\r" } timeout { exit 1 }
