@@ -36,7 +36,7 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                deploy_loop(${HS_List})
+                deploy_loop("${HS_List}")
             }
         }
     }
