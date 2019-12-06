@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-06 14:29:20">
+<Class name="User.SourceControl.Build.Installer">
+<IncludeCode>%occInclude</IncludeCode>
+<TimeChanged>65353,52070.037228</TimeChanged>
+<TimeCreated>65353,48485.614728</TimeCreated>
+
+<XData name="VABUILD">
+<Description>
+Application Definition</Description>
+<XMLNamespace>INSTALLER</XMLNamespace>
+<Data><![CDATA[
+<Manifest>
+<!-- Do some setup -->
+<Var Name="NAMESPACE" Value="VABUILD"/>
+<Var Name="DBRESOURCE" Value="%DB_VABUILD"/>
+
+<!-- Create the namespace, yes it's Ensemble enabled for VABUILD -->
+<Namespace Name="${NAMESPACE}"
+          Create="yes"
+          Code="${NAMESPACE}"
+          Data="${NAMESPACE}"
+          Ensemble="1"
+		  >
+
+<Configuration>
+
+<!-- Create a "data" database -->
+<Database Name="${NAMESPACE}"
+		 Dir="${MGRDIR}/${NAMESPACE}"
+		 Create="overwrite"
+		 Resource="${DBRESOURCE}"
+		 PublicPermissions=""/>
+
+<ClassMapping Package="HS.Local.VA"    				From="${NAMESPACE}"/>
+<ClassMapping Package="User.SourceControl.Git"    	From="${NAMESPACE}"/>
+<ClassMapping Package="HS"    						From="HSLIB"/>
+
+</Configuration>
+
+</Namespace>
+</Manifest>
+]]></Data>
+</XData>
+
+<Method name="setup">
+<Internal>1</Internal>
+<ClassMethod>1</ClassMethod>
+<CodeMode>objectgenerator</CodeMode>
+<FormalSpec><![CDATA[&pVars,pLogLevel:%Integer=3,pInstaller:%Installer.Installer,pLogger:%Installer.AbstractLogger]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+    #; Let our XGL document generate code for this method. 
+    Quit ##class(%Installer.Manifest).%Generate(%compiledclass, %code, "VABUILD")
+]]></Implementation>
+</Method>
+</Class>
+</Export>

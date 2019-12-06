@@ -1,30 +1,59 @@
 pipeline {
     agent any
 	environment {
-        HS_CREDENTIALS     = credentials('HealthShare-Credentials')
+        HS_CREDENTIALS = credentials('HealthShare-Credentials')
     }
+	
+	HS_List = ['localhost:56778','localhost:56778']
+	HS_BuildTargetFolder = '/opt/VABUILD/'
+	HS_BuildInstance = HS01
+	HS_BuildNamespace = "VABUILD"
+	HS_SourceBranch = 'develop'
+	HS_IntBranch = 'int/develop'
+	
+
+	
     stages {
+        stage('Prepare Build Environment') {
+            steps {
+                sh "rm -rf ${HS_BuildTargetFolder}"
+				sh "mkdir ${HS_BuildTargetFolder}"
+                sh "cd ${WORKSPACE}"
+                // Allow the jenkins user the ability to execute the shell files found in the build folder
+                sh "chmod a+x build/*.sh"
+				sh "./buildInstallerNamespace ${HS_BuildInstance} ${WORKSPACE} '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace}"
+			}
+        }
         stage('Build') {
             steps {
-                sh 'echo "Begin Build"'
-				sh 'ccontrol list'
-            }
+                sh 'echo "Call Build method on build instance"'
+			}
         }
 		stage('Test') {
             steps {
-                sh 'echo "run tests after deploy"'
+                sh 'echo "No tests configured"'
             }
         }
 		stage('Deploy') {
             steps {
-                sh 'echo "call the deploy script either once and let it target all machines, or iteratively here to complete the deployment"'
+                deploy_loop(HS_List)
             }
         }
     }
 	post {
-	always {
-		sh 'echo "maybe post is where to call test"'
-	}
+		always {
+			sh 'echo "maybe post is where to call test"'
+		}
 
     }
+	
+	@NonCPS
+	def deploy_loop(HS_List) {
+		HS_List.each { item ->
+			sh 'echo "deploy to: " ${item}'
+		}
+	
+	}
+	
+	
 }
