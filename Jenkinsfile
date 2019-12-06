@@ -20,11 +20,11 @@ pipeline {
                 sh 'echo "call the deploy script either once and let it target all machines, or iteratively here to complete the deployment"'
             }
         }
-		post {
-        always {
-            sh 'echo "maybe this where to call test"'
-        }
     }
+	post {
+	always {
+		sh 'echo "maybe post is where to call test"'
+	}
 
     }
 }
