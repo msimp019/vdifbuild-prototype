@@ -47,13 +47,12 @@ pipeline {
 
     }
 	
-	@NonCPS
-	def deploy_loop(HS_List) {
-		HS_List.each { item ->
-			sh 'echo "deploy to: " ${item}'
-		}
-	
+}
+
+@NonCPS
+def deploy_loop(HS_List) {
+	HS_List.each { item ->
+		sh 'echo "deploy to: " ${item}'
 	}
-	
-	
+
 }
