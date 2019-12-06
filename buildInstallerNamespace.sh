@@ -26,6 +26,6 @@ expect "${namespace}>" { send "Write ##class(User.SourceControl.Build.Installer)
 
 expect "${namespace}>" { send "ZN \"${buildNamespace}\"\r" } timeout { exit 1 }
 
-expect "$buildNamespace" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Git.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
+expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Git.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
 
-expect "$buildNamespace"  { send "H\r"}
+expect "$buildNamespace>"  { send "H\r"}
