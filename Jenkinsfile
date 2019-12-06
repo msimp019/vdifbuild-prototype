@@ -1,10 +1,10 @@
 
-def HS_List = ["localhost:56778","localhost:56778"]
-def HS_BuildTargetFolder = "/opt/VABUILD/"
-def HS_BuildInstance = "HS01"
-def HS_BuildNamespace = "VABUILD"
-def HS_SourceBranch = "develop"
-def HS_IntBranch = "int/develop"
+def HS_List = ['localhost:56778','localhost:56778']
+def HS_BuildTargetFolder = '/opt/VABUILD/'
+def HS_BuildInstance = 'HS01'
+def HS_BuildNamespace = 'VABUILD'
+def HS_SourceBranch = 'develop'
+def HS_IntBranch = 'int/develop'
 
 
 pipeline {
@@ -21,7 +21,7 @@ pipeline {
                 sh 'cd "${WORKSPACE}"'
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
-				sh './buildInstallerNamespace.sh ${HS_BuildInstance} "${WORKSPACE}" "%SYS" ${HS_BuildTargetFolder} ${HS_BuildNamespace}'
+				sh "./buildInstallerNamespace.sh ${HS_BuildInstance} '${WORKSPACE}' '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace}"
 			}
         }
         stage('Build') {
