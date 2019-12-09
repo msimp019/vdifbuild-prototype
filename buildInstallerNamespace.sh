@@ -12,8 +12,8 @@ set password				[lindex $argv 6]
 set gitUserName				[lindex $argv 7]
 set gitPassword				[lindex $argv 8]
 set gitURL					[lindex $argv 9]
-set gitSourceBranch			[lindex $argv 9]
-set gitIntBranch			[lindex $argv 10]
+set gitSourceBranch			[lindex $argv 10]
+set gitIntBranch			[lindex $argv 11]
 
 spawn csession $environment -U $namespace 
 

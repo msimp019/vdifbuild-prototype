@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-09 13:46:22">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-09 14:01:14">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65356,49568.581526</TimeChanged>
+<TimeChanged>65356,50462.187961</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2351,7 +2351,7 @@ Returns if an extension can </Description>
 		
 		//LoadDir is .xml only - do we need to switch to ImportDir to handle csp files?
 		s (tErrors,tLoaded)=""
-		s tSC = $System.OBJ.LoadDir(..RepoFolder(),"cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xml","cbfk",.tErrors,1,.tLoaded)
 		
 	} catch e {
 		//s tSC = e.AsStatus()
