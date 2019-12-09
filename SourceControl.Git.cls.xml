@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-09 14:01:14">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-09 14:14:19">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65356,50462.187961</TimeChanged>
+<TimeChanged>65356,51246.572012</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2377,18 +2377,29 @@ Returns if an extension can </Description>
 	
 	Try {
 
+		//Switch to the integration branch in order to do the diff with the source branch		
 		s tSettings("Switch to Branch")=pIntegrationBranch
 		s tOutput=""
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
+		//Get the new/changed files in the diff between integration branch and source branch
 		s tSettings("ListDiff")=pSourceBranch
 		s tOutput=""
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
-		for i=1:1:tOutput {
-			s tItem=tOutput(i)
+		Merge tImportList = tOutput
+		
+		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
+		s tSettings("Switch to Branch")=pSourceBranch
+		s tOutput=""
+		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		$$$ThrowOnError(tSC)
+		
+		for i=1:1:tImportList {
+			s tItem=tImportList(i)
+			s tSC = $System.OBJ.Load(..RepoFolder()_tItem,"cbfk") $$$ThrowOnError(tSC)
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
 			if tExtension = "xml" {
 				s tInternalName = $REPLACE(tItem,".xml","")
@@ -2402,14 +2413,14 @@ Returns if an extension can </Description>
 
 		}
 		
-		s tProjectName = $TR(pIntegrationBranch,"/","")_##class(Ens.Util.Time).FormatDateTime("%q")
-		s tExportFilename = $System.Util.InstallDirectory()_"mgr/Temp/"_tProjectName_".xml"
+		s tProjectName = "DeployPackage_"_$TR(pIntegrationBranch,"/","")_##class(Ens.Util.Time).FormatDateTime("%q")
+		s tExportFilename = ..RepoBaseFolder()_tProjectName_".xml"
 		//s tProductionName = $G(^Ens.Configuration("csp","LastProduction"))
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
 		
 		Set tProductionClassIncluded = 0
-		Set tComments = "Adding business item to release branch."
+		Set tComments = "Deploy Package created programatically."
 		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,tExportFilename,tProductionName,tComments,tProductionClassIncluded)
 		$$$ThrowOnError(tSC)
 
