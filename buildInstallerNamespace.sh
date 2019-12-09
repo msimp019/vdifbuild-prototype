@@ -9,6 +9,11 @@ set buildTargetFolder		[lindex $argv 3]
 set buildNamespace			[lindex $argv 4]
 set userName				[lindex $argv 5]
 set password				[lindex $argv 6]
+set gitUserName				[lindex $argv 7]
+set gitPassword				[lindex $argv 8]
+set gitURL					[lindex $argv 9]
+set gitSourceBranch			[lindex $argv 9]
+set gitIntBranch			[lindex $argv 10]
 
 spawn csession $environment -U $namespace 
 
@@ -28,4 +33,10 @@ expect "${namespace}>" { send "ZN \"${buildNamespace}\"\r" } timeout { exit 1 }
 
 expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Git.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
 
+expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$gitURL\",\"https\",\"Matthew Simpson\",\"matthew.simpson@readycomputing.com\")\r" } timeout { exit 1 }
+
+expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadBranch(\"$gitIntBranch\",\"$gitPassword\")\r" } timeout { exit 1 }
+
 expect "$buildNamespace>"  { send "H\r"}
+
+

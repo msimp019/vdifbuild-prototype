@@ -3,14 +3,16 @@ def HS_List = ['localhost:56778','localhost:56778']
 def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
-def HS_SourceBranch = 'develop'
-def HS_IntBranch = 'int/develop'
+def Git_SourceBranch = 'develop'
+def Git_IntBranch = 'int/develop'
+def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
 
 
 pipeline {
     agent any
 	environment {
         HS_CREDENTIALS = credentials('HealthShare-Credentials')
+		Git_CREDENTIALS = credentials('Git-CREDENTIALS')
     }
 	
     stages {
@@ -22,7 +24,7 @@ pipeline {
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
 				
-				sh "./buildInstallerNamespace.sh ${HS_BuildInstance} '${WORKSPACE}' '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace} $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW"
+				sh "./buildInstallerNamespace.sh ${HS_BuildInstance} '${WORKSPACE}' '%SYS' ${HS_BuildTargetFolder} ${HS_BuildNamespace} $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_SourceBranch $Git_IntBranch"
 			}
         }
         stage('Build') {
