@@ -17,8 +17,8 @@ set gitIntBranch			[lindex $argv 10]
 
 spawn csession $environment -U $namespace 
 
-expect "Username:" { send "$userName\r" } timeout { exit 1 }
-expect "Password:" { send "$password\r" } timeout { exit 1 }
+# expect "Username:" { send "$userName\r" } timeout { exit 1 }
+# expect "Password:" { send "$password\r" } timeout { exit 1 }
 
 # Remove previous HealthShare classes
 # expect "${namespace}>" { send "Do ##class(%SYSTEM.OBJ).Delete(\"HS.Local.VA*\")\r" } timeout { exit 1 }
