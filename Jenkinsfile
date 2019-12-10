@@ -43,20 +43,13 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                //sh "echo 'No Deploy configured yet'"
-				//for_EachEnv("$HS_List")
 				script {
-					//for (int i = 0; i < list.size(); i++) {
-					//	sh "echo Hello ${list[i]}"
-					//}
-					
 					readFile('DeployList.csv').split('\n').each { line, count ->
 						def fields = line.split(',')
 						for (String item: fields) {
 							echo fields[0] + ':' + fields[1]
 						}
 					}
-
 				}
             }
         }
@@ -68,11 +61,4 @@ pipeline {
     }	
 }
 
-//No NonCPS required
-def for_EachEnv(list) {
-    sh "echo Going to echo a list"
-    for (int i = 0; i < list.size(); i++) {
-        sh "echo Hello ${list[i]}"
-    }
-}
 
