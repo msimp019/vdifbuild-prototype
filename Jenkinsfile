@@ -7,15 +7,14 @@ def Git_SourceBranch = 'develop'
 def Git_IntBranch = 'int/develop'
 def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
 date = new Date()
-dateTimeStamp = date.format("yyyyMMddHHmmss")
-def HS_DeployFileName = '/opt/VABUILD/' + 'DeployPackage_' + 'intdevelop' + $dateTimeStamp + '.xml'
-
+def dateTimeStamp = date.format("yyyyMMddHHmmss")
 
 pipeline {
     agent any
 	environment {
         HS_CREDENTIALS = credentials('HealthShare-Credentials')
 		Git_CREDENTIALS = credentials('Git-CREDENTIALS')
+		HS_DeployFileName = $HS_BuildTargetFolder + 'DeployPackage_' + $Git_IntBranch + $dateTimeStamp + '.xml'
     }
 	
     stages {
