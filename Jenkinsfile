@@ -6,6 +6,7 @@ def HS_BuildNamespace = 'VABUILD'
 def Git_SourceBranch = 'develop'
 def Git_IntBranch = 'int/develop'
 def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
+dev dateTime = $(date +"%Y%m%d%H%M%S")
 
 
 pipeline {
@@ -29,7 +30,8 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_BuildTargetFolder $Git_SourceBranch $Git_IntBranch"
+				sh "fileName=${buildTargetFolder}+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
+                sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $fileName $Git_SourceBranch $Git_IntBranch"
 			}
         }
 		stage('Test') {
