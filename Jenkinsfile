@@ -31,17 +31,9 @@ pipeline {
         }
         stage('Build') {
             steps {
-			
+				//sh "echo $HS_DeployFileName"
 				
-				
-				sh "echo $HS_DeployFileName"
-				
-				//sh "fileName=$HS_BuildTargetFolder"
-				//+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
-				//sh 'echo $fileName'
-                //sh "dateTime=\$(date +'%Y%m%d%H%M%S')"
-				//sh "echo $dateTime"
-				//sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $fileName $Git_SourceBranch $Git_IntBranch"
+				sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $Git_SourceBranch $Git_IntBranch"
 			}
         }
 		stage('Test') {
