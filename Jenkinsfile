@@ -51,11 +51,10 @@ pipeline {
 					//	sh "echo Hello ${list[i]}"
 					//}
 					
-					for (CSVRecord deployRecord : deployRecords) {
-						host=deployRecord.Get("host")
-						port=deployRecord.Get("port")
-						sh "echo $host + ':' + $port"
-					}
+					listsize=deployRecords.length
+					sh "echo $listsize"
+					
+
 				}
             }
         }
