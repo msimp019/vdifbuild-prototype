@@ -10,7 +10,7 @@ set gitIntBranch			[lindex $argv 4]
 
 spawn csession $environment -U $buildNamespace 
 
-expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).BuildDeployment(\"$deployFileName\",\"$gitIntBranch\",\"$gitSourceBranch\")\r" } timeout { exit 1 }
+expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).BuildDeployment(\"$deployFileName\",\"$gitIntBranch\",\"$gitSourceBranch\")\r" } timeout { exit 1 }
 
 expect "$buildNamespace>"  { send "H\r"}
 
