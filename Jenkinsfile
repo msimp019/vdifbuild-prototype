@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-				//sh "echo $HS_DeployFileName"
+				sh "echo $HS_DeployFileName"
 				
 				//sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $Git_SourceBranch $Git_IntBranch"
 			}
