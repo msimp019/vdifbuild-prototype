@@ -43,10 +43,10 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                //for ( i in ${HS_List}) {
-				//	sh "echo ${i}"
-				//}
-				sh "echo 'No Deploy configured yet'"
+                for ( i in [0,1,2,3]) {
+					sh "echo ${i}"
+				}
+				//sh "echo 'No Deploy configured yet'"
             }
         }
     }
