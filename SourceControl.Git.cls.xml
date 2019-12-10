@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-10 12:46:33">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-10 12:52:07">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65357,45982.475066</TimeChanged>
+<TimeChanged>65357,46318.28614</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2379,14 +2379,14 @@ Returns if an extension can </Description>
 
 		//Switch to the integration branch in order to do the diff with the source branch		
 		s tSettings("Switch to Branch")=pIntegrationBranch
-		s tOutput=""
+		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
 		//Get the new/changed files in the diff between integration branch and source branch
 		Kill tSettings
 		s tSettings("ListDiff")=pSourceBranch
-		s tOutput=""
+		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
@@ -2395,7 +2395,7 @@ Returns if an extension can </Description>
 		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
 		Kill tSettings
 		s tSettings("Switch to Branch")=pSourceBranch
-		s tOutput=""
+		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
