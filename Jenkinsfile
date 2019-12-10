@@ -1,5 +1,6 @@
 
 def HS_List = ['localhost:56778','localhost:56778']
+def deployRecords = readCSV file: 'DeployList.csv'
 def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
@@ -44,7 +45,18 @@ pipeline {
 		stage('Deploy') {
             steps {
                 //sh "echo 'No Deploy configured yet'"
-				for_EachEnv("$HS_List")
+				//for_EachEnv("$HS_List")
+				script {
+					//for (int i = 0; i < list.size(); i++) {
+					//	sh "echo Hello ${list[i]}"
+					//}
+					
+					for (CSVRecord deployRecord : deployRecords) {
+						host=deployRecord.Get("host")
+						port=deployRecord.Get("port")
+						sh "echo $host + ':' + $port"
+					}
+				}
             }
         }
     }
