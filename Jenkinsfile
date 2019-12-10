@@ -1,6 +1,5 @@
 
 def HS_List = ['localhost:56778','localhost:56778']
-def deployRecords = readCSV file: 'DeployList.csv'
 def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
@@ -51,9 +50,12 @@ pipeline {
 					//	sh "echo Hello ${list[i]}"
 					//}
 					
-					listsize=deployRecords.length
-					sh "echo $listsize"
-					
+					readFile('DeployList.csv').split('\n').each { line, count ->
+						def fields = line.split(',')
+						for (String item: fields) {
+							echo fields[0] + ':' + fields[1]
+						}
+					}
 
 				}
             }
