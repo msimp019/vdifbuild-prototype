@@ -1,6 +1,6 @@
 
 def HS_List = ['localhost:56778','localhost:56778']
-def HS_BuildTargetFolder = '/opt/VABUILD/'
+HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
 def Git_SourceBranch = 'develop'
