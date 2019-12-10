@@ -30,7 +30,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-				sh "dateTime=$(date +'%Y%m%d%H%M%S')"
+				sh "dateTime=\$(date +'%Y%m%d%H%M%S')"
 				sh "fileName=${buildTargetFolder}"
 				//+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
 				sh "echo $fileName"
