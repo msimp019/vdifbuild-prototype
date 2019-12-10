@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-09 14:14:19">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-09 17:23:52">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65356,51246.572012</TimeChanged>
+<TimeChanged>65356,62511.472358</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2368,7 +2368,7 @@ Returns if an extension can </Description>
 
 <Method name="BuildDeployment">
 <ClassMethod>1</ClassMethod>
-<FormalSpec>pIntegrationBranch,pSourceBranch</FormalSpec>
+<FormalSpec>pFileName,pIntegrationBranch,pSourceBranch</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	#dim tSC As %Status = $$$OK
@@ -2413,17 +2413,16 @@ Returns if an extension can </Description>
 
 		}
 		
-		s tProjectName = "DeployPackage_"_$TR(pIntegrationBranch,"/","")_##class(Ens.Util.Time).FormatDateTime("%q")
-		s tExportFilename = ..RepoBaseFolder()_tProjectName_".xml"
-		//s tProductionName = $G(^Ens.Configuration("csp","LastProduction"))
+		s tProjectName = $REPLACE(pFileName,".xml","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
 		
 		Set tProductionClassIncluded = 0
 		Set tComments = "Deploy Package created programatically."
-		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,tExportFilename,tProductionName,tComments,tProductionClassIncluded)
+		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,pFileName,tProductionName,tComments,tProductionClassIncluded)
 		$$$ThrowOnError(tSC)
 
+		w !, "Deploy Package built and exported to: "_pFileName
 		
 	} catch e {
 		s tSC = e.AsStatus()
