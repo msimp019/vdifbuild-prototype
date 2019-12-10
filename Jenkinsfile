@@ -43,10 +43,8 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                for ( i in [0,1,2,3]) {
-					sh "echo ${i}"
-				}
-				//sh "echo 'No Deploy configured yet'"
+                //sh "echo 'No Deploy configured yet'"
+				for_EachEnv("$HS_List")
             }
         }
     }
@@ -55,5 +53,13 @@ pipeline {
 			sh 'echo "maybe post is where to call test"'
 		}
     }	
+}
+
+//No NonCPS required
+def for_EachEnv(list) {
+    sh "echo Going to echo a list"
+    for (int i = 0; i < list.size(); i++) {
+        sh "echo Hello ${list[i]}"
+    }
 }
 
