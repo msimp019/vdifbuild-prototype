@@ -48,9 +48,9 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                for ( i in ${HS_List}) {
-					sh "echo ${i}"
-				}
+                //for ( i in ${HS_List}) {
+				//	sh "echo ${i}"
+				//}
             }
         }
     }
