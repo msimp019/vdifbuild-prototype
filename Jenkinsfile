@@ -32,9 +32,9 @@ pipeline {
             steps {
 				sh "fileName=$HS_BuildTargetFolder"
 				//+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
-				sh "echo $fileName"
-                sh "dateTime=\$(date +'%Y%m%d%H%M%S')"
-				sh "echo $dateTime"
+				sh 'echo $fileName'
+                //sh "dateTime=\$(date +'%Y%m%d%H%M%S')"
+				//sh "echo $dateTime"
 				//sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $fileName $Git_SourceBranch $Git_IntBranch"
 			}
         }
