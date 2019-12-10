@@ -30,7 +30,8 @@ pipeline {
         }
         stage('Build') {
             steps {
-				sh "fileName=${buildTargetFolder}+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
+				sh "fileName=${buildTargetFolder}"
+				//+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
 				sh "echo $fileName"
                 //sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $fileName $Git_SourceBranch $Git_IntBranch"
 			}
