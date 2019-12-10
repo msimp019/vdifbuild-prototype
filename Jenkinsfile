@@ -51,6 +51,7 @@ pipeline {
                 //for ( i in ${HS_List}) {
 				//	sh "echo ${i}"
 				//}
+				sh "echo 'No Deploy configured yet'"
             }
         }
     }
