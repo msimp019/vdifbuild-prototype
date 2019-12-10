@@ -7,7 +7,8 @@ def Git_SourceBranch = 'develop'
 def Git_IntBranch = 'int/develop'
 def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
 date = new Date()
-def dateTimeStamp = date.format("yyyyMMddHHmmss")
+dateTimeStamp = date.format("yyyyMMddHHmmss")
+def HS_DeployFileName = '/opt/VABUILD/' + 'DeployPackage_' + 'intdevelop' + $dateTimeStamp + '.xml'
 
 
 pipeline {
@@ -30,7 +31,6 @@ pipeline {
 			}
         }
         stage('Build') {
-			HS_DeployFileName = $HS_BuildTargetFolder + 'DeployPackage_' + $Git_IntBranch + $dateTimeStamp + '.xml'
             steps {
 			
 				
