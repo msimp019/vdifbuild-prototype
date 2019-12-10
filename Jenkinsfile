@@ -14,7 +14,7 @@ pipeline {
 	environment {
         HS_CREDENTIALS = credentials('HealthShare-Credentials')
 		Git_CREDENTIALS = credentials('Git-CREDENTIALS')
-		HS_DeployFileName = "$HS_BuildTargetFolder" + "DeployPackage_" + "${Git_IntBranch.replace('/','')}" + "_" + "$dateTimeStamp" + ".xml"
+		HS_DeployFileName = "DeployPackage_" + "${Git_IntBranch.replace('/','')}" + "_" + "$dateTimeStamp" + ".xml"
     }
 	
     stages {
@@ -33,7 +33,7 @@ pipeline {
             steps {
 				//sh "echo $HS_DeployFileName"
 				
-				sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $Git_SourceBranch $Git_IntBranch"
+				sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_BuildTargetFolder $HS_DeployFileName $Git_SourceBranch $Git_IntBranch"
 			}
         }
 		stage('Test') {
