@@ -1,6 +1,6 @@
 
 def HS_List = ['localhost:56778','localhost:56778']
-HS_BuildTargetFolder = '/opt/VABUILD/'
+def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
 def Git_SourceBranch = 'develop'
@@ -30,9 +30,10 @@ pipeline {
 			}
         }
         stage('Build') {
+			HS_DeployFileName = $HS_BuildTargetFolder + 'DeployPackage_' + $Git_IntBranch + $dateTimeStamp + '.xml'
             steps {
 			
-				HS_DeployFileName = $HS_BuildTargetFolder + 'DeployPackage_' + $Git_IntBranch + $dateTimeStamp + '.xml'
+				
 				
 				sh "echo $HS_DeployFileName"
 				
