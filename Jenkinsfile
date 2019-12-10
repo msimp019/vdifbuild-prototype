@@ -6,7 +6,8 @@ def HS_BuildNamespace = 'VABUILD'
 def Git_SourceBranch = 'develop'
 def Git_IntBranch = 'int/develop'
 def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
-
+date = new Date()
+def dateTimeStamp = date.format("yyyyMMddHHmmss")
 
 
 pipeline {
@@ -30,9 +31,11 @@ pipeline {
         }
         stage('Build') {
             steps {
-				sh "fileName=$HS_BuildTargetFolder"
+				sh "echo $dateTimeStamp"
+				
+				//sh "fileName=$HS_BuildTargetFolder"
 				//+'DeployPackage_'+'${Git_IntBranch//\/}'+'_'+$dateTime+'.xml'"
-				sh 'echo $fileName'
+				//sh 'echo $fileName'
                 //sh "dateTime=\$(date +'%Y%m%d%H%M%S')"
 				//sh "echo $dateTime"
 				//sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $fileName $Git_SourceBranch $Git_IntBranch"
@@ -45,7 +48,9 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
-                deploy_loop("${HS_List}")
+                for ( i in ${HS_List}) {
+					sh "echo ${i}"
+				}
             }
         }
     }
@@ -53,15 +58,6 @@ pipeline {
 		always {
 			sh 'echo "maybe post is where to call test"'
 		}
-
-    }
-	
+    }	
 }
 
-@NonCPS
-def deploy_loop(HS_List) {
-	HS_List.each { item ->
-		sh 'echo "deploy to: " ${item}'
-	}
-
-}
