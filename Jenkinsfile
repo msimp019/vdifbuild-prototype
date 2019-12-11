@@ -1,5 +1,4 @@
 
-def HS_List = ['localhost:56778','localhost:56778']
 def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
@@ -44,14 +43,26 @@ pipeline {
 		stage('Deploy') {
             steps {
 				script {
-					readFile('DeployList.csv').split('\n').each { line, count ->
-						def fields = line.split(',')
-						//for (String item: fields) {
+					try {
+						readFile('DeployList.csv').split('\n').each { line, count ->
+							def fields = line.split(',')
 							host=fields[0]
 							port=fields[1]
 							namespace=fields[2]
-						//}
-						sh "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
+							sh "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
+						}
+					} catch (err) {
+						echo err
+						readFile('DeployList.csv').split('\n').each { line, recount ->
+							if (recount < count) { 
+								def fields = line.split(',')
+								host=fields[0]
+								port=fields[1]
+								namespace=fields[2]
+								sh "./deployRemoteRollback.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
+							}
+						}
+						currentBuild.result = 'FAILURE'
 					}
 				}
             }
