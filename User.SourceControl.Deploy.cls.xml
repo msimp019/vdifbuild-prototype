@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-11 14:46:57">
+<Class name="User.SourceControl.Deploy.ImportObject">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>65358,39705.847742</TimeChanged>
+<TimeCreated>64423,51724.279361</TimeCreated>
+
+<Property name="ObjectStream">
+<Type>%Stream.GlobalBinary</Type>
+</Property>
+
+<Property name="Name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="512"/>
+</Property>
+
+<Parameter name="SrcVer">
+<Description>
+Revision number of this class</Description>
+<Default>2</Default>
+</Parameter>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^User.SourceCoF138.ImportObjectD</DataLocation>
+<DefaultData>ImportObjectDefaultData</DefaultData>
+<IdLocation>^User.SourceCoF138.ImportObjectD</IdLocation>
+<IndexLocation>^User.SourceCoF138.ImportObjectI</IndexLocation>
+<StreamLocation>^User.SourceCoF138.ImportObjectS</StreamLocation>
+<Data name="ImportObjectDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>ObjectStream</Value>
+</Value>
+<Value name="3">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="User.SourceControl.Deploy.ImportRequest">
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeChanged>65358,39705.850092</TimeChanged>
+<TimeCreated>64423,51724.279361</TimeCreated>
+
+<Property name="Objects">
+<Type>User.SourceControl.Deploy.ImportObject</Type>
+<Collection>list</Collection>
+</Property>
+
+<Property name="CallBackMethod">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="512"/>
+</Property>
+
+<Parameter name="SrcVer">
+<Description>
+Revision number of this class</Description>
+<Default>2</Default>
+</Parameter>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^User.SourceCF138.ImportRequestD</DataLocation>
+<DefaultData>ImportRequestDefaultData</DefaultData>
+<IdLocation>^User.SourceCF138.ImportRequestD</IdLocation>
+<IndexLocation>^User.SourceCF138.ImportRequestI</IndexLocation>
+<StreamLocation>^User.SourceCF138.ImportRequestS</StreamLocation>
+<Data name="ImportRequestDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Objects</Value>
+</Value>
+<Value name="3">
+<Value>CallBackMethod</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="User.SourceControl.Deploy.Service">
+<Description>
+User.SourceControl.Deploy.Service</Description>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebService</Super>
+<TimeChanged>65358,53159.959521</TimeChanged>
+<TimeCreated>64423,48050.597278</TimeCreated>
+
+<Parameter name="SERVICENAME">
+<Description>
+Name of the WebService.</Description>
+<Default>ZRCDeploy</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+TODO: change this to actual SOAP namespace.
+SOAP Namespace for the WebService</Description>
+<Default>http://ZRC.org</Default>
+</Parameter>
+
+<Parameter name="USECLASSNAMESPACES">
+<Description>
+Namespaces of referenced classes will be used in the WSDL.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="OUTPUTTYPEATTRIBUTE">
+<Description>
+Use xsi:type attribute for literal types.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Method name="ImportClass">
+<Description>
+TODO: add arguments and implementation.
+ImportClass</Description>
+<FormalSpec>pRequest:User.SourceControl.Deploy.ImportRequest,*pDeployStatus:%Boolean</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	#dim tImportObject As User.SourceControl.Deploy.ImportObject
+	s tReturn = ""
+	s pDeployStatus = 1
+	
+	try {
+		Set outputfile=##class(%File).TempFilename("compile")
+		
+		OPEN outputfile:"WSN"
+		USE outputfile
+		
+		s tBusinessItems = 0
+		
+		For i=1:1:pRequest.Objects.Count() {
+			s tImportObject=pRequest.Objects.GetAt(i)
+			
+			if tImportObject.Name [ "DeployPackage" {
+				s tDeployFilename = ##class(%File).TempFilename("deploy")
+				s tDeployFile = ##class(%FileCharacterStream).%New()
+				s tDeployFile.Filename = tDeployFilename
+				s tSC = tDeployFile.CopyFromAndSave(tImportObject.ObjectStream) $$$ThrowOnError(tSC)
+				
+				s tProduction = "" //$G(^Ens.Configuration("csp","LastProduction"))
+				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
+				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
+				s tSC = ##class(Ens.Deployment.Deploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
+				$$$ThrowOnError(tSC)
+				
+			} elseif $P(tImportObject.Name,"/",5) = "businessitems" {
+				//If the imported item is a deployment package for a business item, do the import to the appropriate namespace after importing all the classes
+				s tBusinessItems($I(tBusinessItems))=tImportObject.Name
+			}
+
+			//not currently loading objects directly - only doing the DeployPackage
+			//s tSC = $System.OBJ.LoadStream(tImportObject.ObjectStream,"cuk",.err,.loadedlist)
+			
+			
+		}
+		
+		For i=1:1:tBusinessItems {
+			s tDeployItemName = tBusinessItems(i)
+			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
+			//check to ensure the target namespace exists on this instance
+			if ($D(^%SYS("Ensemble","InstalledNamespace",tTargetNamespace))=1) && ($System.Mirror.IsPrimary() || '$System.Mirror.IsMember()) {
+				s tNS = $NAMESPACE
+				ZN tTargetNamespace
+				
+				s tFilename = $System.Util.InstallDirectory()_$E(tDeployItemName,2,*)
+				if ##class(%File).Exists(tFilename) {
+					s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
+					s tRollbackFilename = $System.Util.InstallDirectory()_"/mgr/Temp/"_##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")_"_"_$P(tDeployItemName,"/",7)
+					s tSCDeploy = ##class(Ens.Deployment.Deploy).DeployCode(tFilename,tProduction,1,tRollbackFilename,"C")
+					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
+				} else {
+					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
+				}
+				ZN tNS
+			}
+		}
+		
+		if pRequest.CallBackMethod '= "" {
+			 XECUTE "do "_pRequest.CallBackMethod
+		}
+		
+		CLOSE outputfile
+		
+		s tFile=##class(%FileCharacterStream).%New()
+		s tFile.Filename=outputfile
+		
+		s tReturn="Loading import request to namespace "_$NAMESPACE_" on "_##class(%SYS.System).GetNodeName()_":"_##class(%SYS.System).GetInstanceName()_$C(10)
+		
+		While 'tFile.AtEnd {
+			s tReturn=tReturn_tFile.ReadLine()_$C(10)
+		}
+		
+		d tFile.Clear()
+		
+		s tErrorText=""
+		For { s tErrorText=$O(err(tErrorText)) Q:tErrorText=""
+			s tReturn=tReturn_err(tErrorText)_$C(10)
+			s pDeployStatus = 0
+		}
+
+		if $$$ISERR(tSC) {
+			s tReturn = tReturn_$System.Status.GetErrorText(tSC)_$C(10)
+			s pDeployStatus = 0
+		} 
+	} catch e {
+		if $ZERROR["<ZSOAP>" {
+            Set tSC=%objlasterror
+        } else {
+            Set tSC = e.AsStatus()
+        }
+		s tReturn = tReturn_$System.Status.GetErrorText(tSC)
+		s pDeployStatus = 0
+	}
+	Quit tReturn
+]]></Implementation>
+</Method>
+
+<Method name="Test">
+<Description>
+TODO: add arguments and implementation.
+Test</Description>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[	Quit "Test"
+]]></Implementation>
+</Method>
+
+<Parameter name="SrcVer">
+<Description>
+Revision number of this class</Description>
+<Default>2</Default>
+</Parameter>
+</Class>
+
+
+<Class name="User.SourceControl.Deploy.ServiceClient">
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%SOAP.WebClient</Super>
+<TimeChanged>65358,51315.089123</TimeChanged>
+<TimeCreated>64423,51853.552358</TimeCreated>
+
+<Parameter name="LOCATION">
+<Description>
+This is the URL used to access the web service.</Description>
+<Default>http://localhost:57775/csp/public/hsregistry/User.SourceControl.Deploy.Service.cls</Default>
+</Parameter>
+
+<Parameter name="NAMESPACE">
+<Description>
+This is the namespace used by the Service</Description>
+<Default>http://ZRC.org</Default>
+</Parameter>
+
+<Parameter name="OUTPUTTYPEATTRIBUTE">
+<Description>
+Use xsi:type attribute for literal types.</Description>
+<Default>1</Default>
+</Parameter>
+
+<Parameter name="SECURITYIN">
+<Description>
+Determines handling of Security header.</Description>
+<Default>ALLOW</Default>
+</Parameter>
+
+<Parameter name="SERVICENAME">
+<Description>
+This is the name of the Service</Description>
+<Default>HDS</Default>
+</Parameter>
+
+<Parameter name="SOAPVERSION">
+<Description>
+This is the SOAP version supported by the service.</Description>
+<Default>1.1</Default>
+</Parameter>
+
+<Method name="ImportClass">
+<Final>1</Final>
+<FormalSpec>pRequest:User.SourceControl.Deploy.ImportRequest,*pDeployStatus:%Boolean</FormalSpec>
+<ProcedureBlock>1</ProcedureBlock>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<SoapBindingStyle>document</SoapBindingStyle>
+<SoapBodyUse>literal</SoapBodyUse>
+<Implementation><![CDATA[ Quit ..WebMethod("ImportClass").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.ImportClass",.pRequest,.pDeployStatus)
+]]></Implementation>
+</Method>
+
+<Method name="Test">
+<Final>1</Final>
+<ProcedureBlock>1</ProcedureBlock>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<SoapBindingStyle>document</SoapBindingStyle>
+<SoapBodyUse>literal</SoapBodyUse>
+<Implementation><![CDATA[ Quit ..WebMethod("Test").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Test")
+]]></Implementation>
+</Method>
+
+<Parameter name="SrcVer">
+<Description>
+Revision number of this class</Description>
+<Default>2</Default>
+</Parameter>
+</Class>
+
+
+</Export>

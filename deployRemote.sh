@@ -1,57 +1,22 @@
-#!/bin/bash
+#!/usr/bin/expect
 
-# Parameters
-# $1=HealthShare Instance Name
-# $2=WorkSpace Directory (Jenkins)
-# $3=HealthShare UserName
-# $4=HealthShare Password
-# $5=Branch identifier (Develop,Stage,Prod)
-# $6=Deploy IP@User
-# $7=HealthShare Environment Name (Develop,Sit,Demo,Prod)
+set timeout 60
 
-# Variables
-DEPLOYFILE=onerecord-${BUILD_NUMBER}.tar.gz
+set environment   			[lindex $argv 0]
+set buildNamespace			[lindex $argv 1]
+set deployFileName			[lindex $argv 2]
+set targetHost				[lindex $argv 3]
+set targetPort				[lindex $argv 4]
+set targetNamespace			[lindex $argv 5]
 
-# Remote Deployment
-# Set Remote deployment variables
-ACCESSKEY="-i /var/lib/jenkins/workspace/OneRecord.pem"
-REMOTESERVER=$6
-DEPLOYFULLDIR="~/deploy/"${BUILD_NUMBER}
+spawn csession $environment -U $buildNamespace 
 
-echo "Remote Deployment..."
-echo "Access Key: "${ACCESSKEY}
-echo "Remote Server: "${REMOTESERVER}
-echo "Deploy tar file: "${2}/deploy/$DEPLOYFILE
-echo "Deploy target directory: "${DEPLOYFULLDIR}
+expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).Deploy(\"$deployFileName\",\"$targetHost\",\"$targetPort\",\"$targetNamespace\")\r" } timeout { puts "timed out"; exit 1 }
 
-# Create deploy folder 
-ssh ${ACCESSKEY} ${REMOTESERVER} "mkdir -p $DEPLOYFULLDIR"
+expect { 
+	"SUCCESS"  { send "H\r"; puts "SUCCESS"; exit 0 }
+	"FAILURE"  { send "H\r"; puts "FAILURE"; exit 1 }
+	"$buildNamespace>"  { send "H\r"; exit 1 }
+}
 
-# Copy tar file
-scp ${ACCESSKEY} ${2}/deploy/$DEPLOYFILE ${REMOTESERVER}:"~/deploy"
 
-# Untar build
-ssh ${ACCESSKEY} ${REMOTESERVER} "tar -xf ~/deploy/$DEPLOYFILE --directory $DEPLOYFULLDIR"
-
-# Change owner and mode
-ssh ${ACCESSKEY} ${REMOTESERVER} "chmod -R a+x $DEPLOYFULLDIR/*"
-
-# Deploy Remote
-INSTANCENAME=$1
-REMOTEFOLDER="~/deploy/"${BUILD_NUMBER}${WORKSPACE}
-
-ssh -i /var/lib/jenkins/workspace/OneRecord.pem ${REMOTESERVER} "cd $REMOTEFOLDER/ ; ./expect.sh $INSTANCENAME $REMOTEFOLDER $3 $4 $5 $7"
-
-# Deploy xslt
-echo "Deploying XSLT..."
-echo "FROM: "${REMOTEFOLDER}/xslt
-DEPLOYXSLTDIR="/intersystems/"${INSTANCENAME}"/csp"
-echo "  TO: "${DEPLOYXSLTDIR}
-ssh -i /var/lib/jenkins/workspace/OneRecord.pem ${REMOTESERVER} "cd $REMOTEFOLDER/ ; sudo cp -R xslt $DEPLOYXSLTDIR"
-
-# Deploy test files
-echo "Deploying Test Files..."
-echo "FROM: "${REMOTEFOLDER}/testfiles
-DEPLOYTESTFILEDIR="/intersystems"
-echo "  TO: "${DEPLOYTESTFILEDIR}
-ssh -i /var/lib/jenkins/workspace/OneRecord.pem ${REMOTESERVER} "cd $REMOTEFOLDER/ ; sudo cp -R testfiles $DEPLOYTESTFILEDIR"

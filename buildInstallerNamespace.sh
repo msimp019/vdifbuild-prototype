@@ -33,9 +33,13 @@ expect "${namespace}>" { send "ZN \"${buildNamespace}\"\r" } timeout { exit 1 }
 
 expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Git.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
 
+expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Deploy.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
+
 expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$gitURL\",\"https\",\"Matthew Simpson\",\"matthew.simpson@readycomputing.com\")\r" } timeout { exit 1 }
 
 expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadBranch(\"$gitIntBranch\",\"$gitPassword\")\r" } timeout { exit 1 }
+
+expect "$buildNamespace>" { send "Do ##class(Ens.Config.Credentials).SetCredential(\"HS_Credentials\"\"$userName\",\"$password\",1)\r" } timeout { exit 1 }
 
 expect "$buildNamespace>"  { send "H\r"}
 
