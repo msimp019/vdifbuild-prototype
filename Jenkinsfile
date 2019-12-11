@@ -46,12 +46,12 @@ pipeline {
 				script {
 					readFile('DeployList.csv').split('\n').each { line, count ->
 						def fields = line.split(',')
-						for (String item: fields) {
+						//for (String item: fields) {
 							host=fields[0]
 							port=fields[1]
 							namespace=fields[2]
-							sh "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
-						}
+						//}
+						sh "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
 					}
 				}
             }
