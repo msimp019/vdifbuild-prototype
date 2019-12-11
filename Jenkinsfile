@@ -47,7 +47,10 @@ pipeline {
 					readFile('DeployList.csv').split('\n').each { line, count ->
 						def fields = line.split(',')
 						for (String item: fields) {
-							echo fields[0] + ':' + fields[1]
+							//echo fields[0] + ':' + fields[1]
+							host=fields[0]
+							port=fields[1]
+							sh "echo $host + '_' + $port"
 						}
 					}
 				}
