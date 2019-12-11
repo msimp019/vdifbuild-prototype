@@ -42,8 +42,9 @@ pipeline {
         }
 		stage('Deploy') {
             steps {
+			try {
 				script {
-					try {
+					
 						readFile('DeployList.csv').split('\n').each { line, count ->
 							def fields = line.split(',')
 							host=fields[0]
@@ -51,8 +52,10 @@ pipeline {
 							namespace=fields[2]
 							sh "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
 						}
-					} catch (err) {
-						echo err
+					}
+			} catch (err) {
+				echo err
+				script {
 						readFile('DeployList.csv').split('\n').each { line, recount ->
 							if (recount < count) { 
 								def fields = line.split(',')
