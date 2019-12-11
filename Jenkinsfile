@@ -19,8 +19,8 @@ pipeline {
     stages {
         stage('Prepare Build Environment') {
             steps {
-                //sh "rm -rf ${HS_BuildTargetFolder}"
-				//sh "mkdir ${HS_BuildTargetFolder}"
+                //sh "rm -rf ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
+				//sh "mkdir ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
                 sh 'cd "${WORKSPACE}"'
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
@@ -30,50 +30,36 @@ pipeline {
         }
         stage('Build') {
             steps {
-				//sh "echo $HS_DeployFileName"
-				
 				sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $Git_SourceBranch $Git_IntBranch"
 			}
+        }
+		stage('Deploy') {
+            steps {
+				script {
+						readFile('DeployList.csv').split('\n').each { line, count ->
+							def fields = line.split(',')
+							host=fields[0]
+							port=fields[1]
+							namespace=fields[2]
+							def result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
+							echo result
+							return result == 0
+						}
+					echo result
+					echo count
+
+				}
+            }
         }
 		stage('Test') {
             steps {
                 sh 'echo "No tests configured"'
             }
         }
-		stage('Deploy') {
-            steps {
-			try {
-				script {
-					
-						readFile('DeployList.csv').split('\n').each { line, count ->
-							def fields = line.split(',')
-							host=fields[0]
-							port=fields[1]
-							namespace=fields[2]
-							sh "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
-						}
-					}
-			} catch (err) {
-				echo err
-				script {
-						readFile('DeployList.csv').split('\n').each { line, recount ->
-							if (recount < count) { 
-								def fields = line.split(',')
-								host=fields[0]
-								port=fields[1]
-								namespace=fields[2]
-								sh "./deployRemoteRollback.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
-							}
-						}
-						currentBuild.result = 'FAILURE'
-					}
-				}
-            }
-        }
     }
 	post {
 		always {
-			sh 'echo "maybe post is where to call test"'
+			sh 'echo "post"'
 		}
     }	
 }
