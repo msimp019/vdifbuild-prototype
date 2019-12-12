@@ -39,7 +39,7 @@ expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadS
 
 expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadBranch(\"$gitIntBranch\",\"$gitPassword\")\r" } timeout { exit 1 }
 
-expect "$buildNamespace>" { send "Do ##class(Ens.Config.Credentials).SetCredential(\"HS_Credentials\"\"$userName\",\"$password\",1)\r" } timeout { exit 1 }
+expect "$buildNamespace>" { send "Do ##class(Ens.Config.Credentials).SetCredential(\"HS_Credentials\",\"$userName\",\"$password\",1)\r" } timeout { exit 1 }
 
 expect "$buildNamespace>"  { send "H\r"}
 
