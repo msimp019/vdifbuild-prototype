@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-11 15:03:20">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-11 16:29:45">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65358,54186.195981</TimeChanged>
+<TimeChanged>65358,55738.10332</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2489,19 +2489,20 @@ Returns if an extension can </Description>
 
 <Method name="DeployRollback">
 <ClassMethod>1</ClassMethod>
-<FormalSpec>pTargetSystem:%String</FormalSpec>
+<FormalSpec>pFilename:%String,pTargetHost:%String,pTargetPort:%String,pTargetNamespace:%String</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
+	#dim tDeployStatus As %Boolean = 1
 	
 	Try {
-		
+		w !,"Rolling back "_pTargetHost_":"_pTargetPort_$C(10)
 	} catch e {
 		s tSC = e.AsStatus()
 	}
-	Quit tSC
+	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 ]]></Implementation>
 </Method>
 
