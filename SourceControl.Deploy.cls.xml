@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-11 14:56:17">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 08:08:56">
 <Class name="User.SourceControl.Deploy.ImportObject">
 <Super>%Persistent,%XML.Adaptor</Super>
 <TimeChanged>65358,39705.847742</TimeChanged>
@@ -94,7 +94,7 @@ Revision number of this class</Description>
 User.SourceControl.Deploy.Service</Description>
 <ProcedureBlock>1</ProcedureBlock>
 <Super>%SOAP.WebService</Super>
-<TimeChanged>65358,53159.959521</TimeChanged>
+<TimeChanged>65359,29104.8891</TimeChanged>
 <TimeCreated>64423,48050.597278</TimeCreated>
 
 <Parameter name="SERVICENAME">
@@ -157,17 +157,13 @@ ImportClass</Description>
 				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
 				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
 				s tSC = ##class(Ens.Deployment.Deploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
-				$$$ThrowOnError(tSC)
+				//Don't throw error here so that we can continue to log output to file and then log file to return - check for error in tSC later
+				
 				
 			} elseif $P(tImportObject.Name,"/",5) = "businessitems" {
 				//If the imported item is a deployment package for a business item, do the import to the appropriate namespace after importing all the classes
 				s tBusinessItems($I(tBusinessItems))=tImportObject.Name
 			}
-
-			//not currently loading objects directly - only doing the DeployPackage
-			//s tSC = $System.OBJ.LoadStream(tImportObject.ObjectStream,"cuk",.err,.loadedlist)
-			
-			
 		}
 		
 		For i=1:1:tBusinessItems {
@@ -208,12 +204,66 @@ ImportClass</Description>
 		
 		d tFile.Clear()
 		
-		s tErrorText=""
-		For { s tErrorText=$O(err(tErrorText)) Q:tErrorText=""
-			s tReturn=tReturn_err(tErrorText)_$C(10)
-			s pDeployStatus = 0
-		}
+		//Not currently doing any loads that populate err
+#;		s tErrorText=""
+#;		For { s tErrorText=$O(err(tErrorText)) Q:tErrorText=""
+#;			s tReturn=tReturn_err(tErrorText)_$C(10)
+#;			s pDeployStatus = 0
+#;		}
 
+		if $$$ISERR(tSC) {
+			s tReturn = tReturn_$System.Status.GetErrorText(tSC)_$C(10)
+			s pDeployStatus = 0
+		} 
+	} catch e {
+		if $ZERROR["<ZSOAP>" {
+            Set tSC=%objlasterror
+        } else {
+            Set tSC = e.AsStatus()
+        }
+		s tReturn = tReturn_$System.Status.GetErrorText(tSC)
+		s pDeployStatus = 0
+	}
+	Quit tReturn
+]]></Implementation>
+</Method>
+
+<Method name="Rollback">
+<FormalSpec>pRequest:User.SourceControl.Deploy.ImportRequest,*pDeployStatus:%Boolean</FormalSpec>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<Implementation><![CDATA[
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	s tReturn = ""
+	s pDeployStatus = 1
+	
+	try {
+		Set outputfile=##class(%File).TempFilename("compile")
+		
+		OPEN outputfile:"WSN"
+		USE outputfile
+		
+		if pRequest.CallBackMethod '= "" {
+			 XECUTE "do "_pRequest.CallBackMethod
+		}
+		
+		s tSC = ##class(Ens.Deployment.Deploy).RollbackLastDeployment(,,,"LC")
+		//Don't throw error here, check for error in tSC later
+		
+		CLOSE outputfile
+		
+		s tFile=##class(%FileCharacterStream).%New()
+		s tFile.Filename=outputfile
+		
+		s tReturn="Rollback last deployment in namespace "_$NAMESPACE_" on "_##class(%SYS.System).GetNodeName()_":"_##class(%SYS.System).GetInstanceName()_$C(10)
+		
+		While 'tFile.AtEnd {
+			s tReturn=tReturn_tFile.ReadLine()_$C(10)
+		}
+		
+		d tFile.Clear()
+		
 		if $$$ISERR(tSC) {
 			s tReturn = tReturn_$System.Status.GetErrorText(tSC)_$C(10)
 			s pDeployStatus = 0
@@ -252,7 +302,7 @@ Revision number of this class</Description>
 <Class name="User.SourceControl.Deploy.ServiceClient">
 <ProcedureBlock>1</ProcedureBlock>
 <Super>%SOAP.WebClient</Super>
-<TimeChanged>65358,51315.089123</TimeChanged>
+<TimeChanged>65359,29135.905022</TimeChanged>
 <TimeCreated>64423,51853.552358</TimeCreated>
 
 <Parameter name="LOCATION">
@@ -300,6 +350,18 @@ This is the SOAP version supported by the service.</Description>
 <SoapBindingStyle>document</SoapBindingStyle>
 <SoapBodyUse>literal</SoapBodyUse>
 <Implementation><![CDATA[ Quit ..WebMethod("ImportClass").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.ImportClass",.pRequest,.pDeployStatus)
+]]></Implementation>
+</Method>
+
+<Method name="Rollback">
+<Final>1</Final>
+<FormalSpec>pRequest:User.SourceControl.Deploy.ImportRequest,*pDeployStatus:%Boolean</FormalSpec>
+<ProcedureBlock>1</ProcedureBlock>
+<ReturnType>%String</ReturnType>
+<WebMethod>1</WebMethod>
+<SoapBindingStyle>document</SoapBindingStyle>
+<SoapBodyUse>literal</SoapBodyUse>
+<Implementation><![CDATA[ Quit ..WebMethod("Rollback").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Rollback",.pRequest,.pDeployStatus)
 ]]></Implementation>
 </Method>
 

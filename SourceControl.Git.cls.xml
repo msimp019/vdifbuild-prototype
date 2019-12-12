@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-11 16:29:45">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 08:08:45">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65358,55738.10332</TimeChanged>
+<TimeChanged>65359,29312.354804</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2498,10 +2498,40 @@ Returns if an extension can </Description>
 	#dim tDeployStatus As %Boolean = 1
 	
 	Try {
-		w !,"Rolling back "_pTargetHost_":"_pTargetPort_$C(10)
+		
+		s tResponse="-------------------------------"_$C(10)
+		s tResponse=tResponse_"Rollback of last deployment to "_pTargetHost_":"_pTargetPort_$C(10)
+		s tResponse=tResponse_"-------------------------------"_$C(10)		
+		
+		s tImportRequest = ##class(%ZRC.SourceControl.Deploy.ImportRequest).%New()
+		s tImportRequest.CallBackMethod = "" //how do we determine the config script?
+		
+		Set tServiceClient=##class(%ZRC.SourceControl.Deploy.ServiceClient).%New()
+		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/User.SourceControl.Deploy.Service.cls"
+		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
+		Set tServiceClient.Timeout = 300
+		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
+		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
+
+		Set tResponse = tServiceClient.Rollback(tImportRequest,.tDeployStatus)
+
 	} catch e {
-		s tSC = e.AsStatus()
+		if $ZERROR["<ZSOAP>" {
+            Set tSC=%objlasterror
+        } else {
+            Set tSC = e.AsStatus()
+        }
+		s tResponse="-------------------------------"_$C(10)
+		s tResponse=tResponse_"Error deploying to "_pTargetHost_":"_pTargetPort_" = "_$System.Status.GetErrorText(tSC)_$C(10)
+		s tResponse=tResponse_"-------------------------------"_$C(10)
+		
+		s tDeployStatus = 0
 	}
+
+	for i=1:1:$L(tResponse,$C(10)) {
+		w !,$P(tResponse,$C(10),i)
+	}
+
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 ]]></Implementation>
 </Method>
@@ -2514,12 +2544,6 @@ Returns if an extension can </Description>
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	#dim tDeployStatus As %Boolean = 1
-	
-	//test reutrn value
-	s tDeployStatus = 1
-	w !,$I(^MS("count"))
-	if ^MS("count")#2 = 0 s tDeployStatus = 0
-	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 	
 	Try{
 		
@@ -2571,6 +2595,14 @@ Returns if an extension can </Description>
 	for i=1:1:$L(tResponse,$C(10)) {
 		w !,$P(tResponse,$C(10),i)
 	}
+	
+	
+	//test reutrn value
+	s tDeployStatus = 1
+	w !,$I(^MS("count"))
+	if ^MS("count")#2 = 0 s tDeployStatus = 0
+	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
+	
 
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 ]]></Implementation>
