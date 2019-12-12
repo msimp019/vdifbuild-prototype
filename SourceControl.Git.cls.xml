@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 08:08:45">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 08:14:36">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -965,7 +965,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65359,29312.354804</TimeChanged>
+<TimeChanged>65359,29623.88425</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2503,10 +2503,10 @@ Returns if an extension can </Description>
 		s tResponse=tResponse_"Rollback of last deployment to "_pTargetHost_":"_pTargetPort_$C(10)
 		s tResponse=tResponse_"-------------------------------"_$C(10)		
 		
-		s tImportRequest = ##class(%ZRC.SourceControl.Deploy.ImportRequest).%New()
+		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		s tImportRequest.CallBackMethod = "" //how do we determine the config script?
 		
-		Set tServiceClient=##class(%ZRC.SourceControl.Deploy.ServiceClient).%New()
+		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/User.SourceControl.Deploy.Service.cls"
 		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
 		Set tServiceClient.Timeout = 300
@@ -2562,15 +2562,15 @@ Returns if an extension can </Description>
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
 		
-		s tImportRequest = ##class(%ZRC.SourceControl.Deploy.ImportRequest).%New()
+		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		s tImportRequest.CallBackMethod = "" //how do we determine the config script?
 		
-		s tImportObject = ##class(%ZRC.SourceControl.Deploy.ImportObject).%New()
+		s tImportObject = ##class(User.SourceControl.Deploy.ImportObject).%New()
 		s tSC = tImportObject.ObjectStream.CopyFrom(tDeployStream) $$$ThrowOnError(tSC)
 		s tImportObject.Name = ##class(%File).GetFilename(pFilename)
 		s tSC = tImportRequest.Objects.Insert(tImportObject) $$$ThrowOnError(tSC)
 		
-		Set tServiceClient=##class(%ZRC.SourceControl.Deploy.ServiceClient).%New()
+		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/User.SourceControl.Deploy.Service.cls"
 		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
 		Set tServiceClient.Timeout = 300
@@ -2598,10 +2598,8 @@ Returns if an extension can </Description>
 	
 	
 	//test reutrn value
-	s tDeployStatus = 1
 	w !,$I(^MS("count"))
 	if ^MS("count")#2 = 0 s tDeployStatus = 0
-	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 	
 
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
