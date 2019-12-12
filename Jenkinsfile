@@ -46,9 +46,8 @@ pipeline {
 							namespace=fields[2]
 							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
 							echo "$result"
-							echo "$count"
-							countCompleted == count
 							if (result == 1) { throw new Exception("$result") }
+							countCompleted++
 						}
 					} catch(Exception e) {
 						// do nothing, this just to exit the loop
