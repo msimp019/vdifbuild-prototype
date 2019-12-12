@@ -37,6 +37,7 @@ pipeline {
             steps {
 				script {
 					def result
+					def count
 						readFile('DeployList.csv').split('\n').each { line, count ->
 							def fields = line.split(',')
 							host=fields[0]
