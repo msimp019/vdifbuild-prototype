@@ -48,7 +48,7 @@ pipeline {
 							echo "$result"
 							echo "$count"
 							countCompleted == count
-							throw new Exception("$result")
+							if (result == 1) { throw new Exception("$result") }
 						}
 					} catch(Exception e) {
 						// do nothing, this just to exit the loop
