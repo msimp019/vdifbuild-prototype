@@ -37,7 +37,7 @@ pipeline {
             steps {
 				script {
 					def result
-					def count
+					def countCompleted
 						readFile('DeployList.csv').split('\n').each { line, count ->
 							def fields = line.split(',')
 							host=fields[0]
@@ -45,10 +45,11 @@ pipeline {
 							namespace=fields[2]
 							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
 							echo "$result"
-							//return result == 0
+							countCompleted = count
+							return result == 1
 						}
 					echo "$result"
-					echo "$count"
+					echo "$countCompleted"
 
 				}
             }
