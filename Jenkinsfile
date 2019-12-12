@@ -42,11 +42,11 @@ pipeline {
 							port=fields[1]
 							namespace=fields[2]
 							def result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
-							echo result
+							echo "$result"
 							return result == 0
 						}
-					echo result
-					echo count
+					echo "$result"
+					echo "$count"
 
 				}
             }
