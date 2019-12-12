@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 08:08:56">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 09:12:29">
 <Class name="User.SourceControl.Deploy.ImportObject">
 <Super>%Persistent,%XML.Adaptor</Super>
 <TimeChanged>65358,39705.847742</TimeChanged>
@@ -94,7 +94,7 @@ Revision number of this class</Description>
 User.SourceControl.Deploy.Service</Description>
 <ProcedureBlock>1</ProcedureBlock>
 <Super>%SOAP.WebService</Super>
-<TimeChanged>65359,29104.8891</TimeChanged>
+<TimeChanged>65359,33138.162142</TimeChanged>
 <TimeCreated>64423,48050.597278</TimeCreated>
 
 <Parameter name="SERVICENAME">
@@ -153,7 +153,8 @@ ImportClass</Description>
 				s tDeployFile.Filename = tDeployFilename
 				s tSC = tDeployFile.CopyFromAndSave(tImportObject.ObjectStream) $$$ThrowOnError(tSC)
 				
-				s tProduction = "" //$G(^Ens.Configuration("csp","LastProduction"))
+				s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
+				s:tProduction="" tProduction = "NoProduction"
 				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
 				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
 				s tSC = ##class(Ens.Deployment.Deploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
