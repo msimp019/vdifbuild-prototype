@@ -49,8 +49,8 @@ pipeline {
 							countCompleted = countCompleted + 1
 						}
 					} catch(Exception e) {
-						readFile('DeployList.csv').split('\n').each { line, count ->
-							if (count < countCompleted) { 
+						readFile('DeployList.csv').split('\n').eachWithIndex { line, index ->
+							if (index < countCompleted) { 
 								def fields = line.split(',')
 								host=fields[0]
 								port=fields[1]
