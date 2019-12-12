@@ -47,7 +47,7 @@ pipeline {
 							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
 							echo "$result"
 							if (result == 1) { throw new Exception("$result") }
-							countCompleted == countCompleted + 1
+							countCompleted = countCompleted + 1
 						}
 					} catch(Exception e) {
 						// do nothing, this just to exit the loop
