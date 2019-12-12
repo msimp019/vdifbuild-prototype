@@ -36,12 +36,13 @@ pipeline {
 		stage('Deploy') {
             steps {
 				script {
+					def result
 						readFile('DeployList.csv').split('\n').each { line, count ->
 							def fields = line.split(',')
 							host=fields[0]
 							port=fields[1]
 							namespace=fields[2]
-							def result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
+							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
 							echo "$result"
 							//return result == 0
 						}
