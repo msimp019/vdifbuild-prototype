@@ -58,7 +58,7 @@ pipeline {
 								sh "./deployRemoteRollback.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace"
 							}
 						}
-						//currentBuild.result = 'FAILURE'
+						//Fail the stage after doing the rollbacks
 						sh "exit 1"
 					}
 
