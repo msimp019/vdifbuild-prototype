@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-06 14:29:20">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-12 09:01:39">
 <Class name="User.SourceControl.Build.Installer">
 <IncludeCode>%occInclude</IncludeCode>
-<TimeChanged>65353,52070.037228</TimeChanged>
+<TimeChanged>65359,32485.72003</TimeChanged>
 <TimeCreated>65353,48485.614728</TimeCreated>
 
 <XData name="VABUILD">
@@ -39,6 +39,14 @@ Application Definition</Description>
 </Configuration>
 
 </Namespace>
+
+<Namespace Name="%SYS"
+          Create="no">
+
+<Invoke Class="User.SourceControl.Build.Installer" Method="CreateCSPApplications" CheckStatus="1" Return="tSC"> 
+</Invoke>
+
+</Namespace>
 </Manifest>
 ]]></Data>
 </XData>
@@ -52,6 +60,64 @@ Application Definition</Description>
 <Implementation><![CDATA[
     #; Let our XGL document generate code for this method. 
     Quit ##class(%Installer.Manifest).%Generate(%compiledclass, %code, "VABUILD")
+]]></Implementation>
+</Method>
+
+<Method name="CreateCSPApplications">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	
+	Try {
+		
+		//Ensure HSCUSTOM html and services csp applications exist, create if not
+		s tCSPApp="/csp/healthshare/hscustom/services"
+		s tExists=##class(Security.Applications).Exists(tCSPApp)
+		if 'tExists {
+			d ##class(%File).CreateDirectoryChain($System.Util.InstallDirectory()_"csp/healthshare/hscustom")
+			s tSC=##class(Security.Applications).Copy("/csp/healthshare/ensemble/services",tCSPApp,"HealthShare HSCUSTOM Services")
+			w !,tSC
+		}
+		s tCSPProp("NameSpace")="HSCUSTOM"
+		s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/healthshare/hscustom/")
+		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
+		$$$ThrowOnError(tSC)
+		
+		s tCSPApp="/csp/healthshare/hscustom"
+		s tExists=##class(Security.Applications).Exists(tCSPApp)
+		if 'tExists {
+			s tSC=##class(Security.Applications).Copy("/csp/healthshare/ensemble",tCSPApp,"HealthShare HSCUSTOM")
+			w !,tSC
+		}
+		s tCSPProp("NameSpace")="HSCUSTOM"
+		s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/healthshare/hscustom/")
+		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
+		$$$ThrowOnError(tSC)
+		
+		//Ensure /csp/xslt csp application exists, create if not
+		s tCSPApp="/csp/xslt"
+		s tExists=##class(Security.Applications).Exists(tCSPApp)
+		if 'tExists {
+			s tSC=##class(Security.Applications).Copy("/csp/healthshare/ensemble",tCSPApp,"xslt files")
+			w !,tSC
+			s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/xslt/")
+			s tCSPProp("InbndWebServicesEnabled")=1
+		}
+		//modify /csp/xslt to namespace HSCUSTOM always
+		s tCSPProp("NameSpace")="HSCUSTOM"
+		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
+		$$$ThrowOnError(tSC)
+		
+		
+		
+		
+	} catch e {
+		s tSC = e.AsStatus()
+	}
+	Quit tSC
 ]]></Implementation>
 </Method>
 </Class>
