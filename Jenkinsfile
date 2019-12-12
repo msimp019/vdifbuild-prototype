@@ -37,7 +37,7 @@ pipeline {
             steps {
 				script {
 					def result
-					def countCompleted
+					def countCompleted = 0
 					try {
 						readFile('DeployList.csv').split('\n').each { line, count ->
 							def fields = line.split(',')
@@ -47,7 +47,7 @@ pipeline {
 							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
 							echo "$result"
 							if (result == 1) { throw new Exception("$result") }
-							//countCompleted++
+							countCompleted == countCompleted + 1
 						}
 					} catch(Exception e) {
 						// do nothing, this just to exit the loop
