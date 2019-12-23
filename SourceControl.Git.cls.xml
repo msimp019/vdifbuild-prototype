@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-19 11:49:38">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-23 15:55:37">
 <Class name="User.SourceControl.Git.Dialogue">
 <Description><![CDATA[
 <a href="http://www.readycomputing.com/">
@@ -933,7 +933,7 @@ Revision number of this class</Description>
 <Abstract>1</Abstract>
 <IncludeCode>%occStatus</IncludeCode>
 <ProcedureBlock>1</ProcedureBlock>
-<TimeChanged>65366,42562.650975</TimeChanged>
+<TimeChanged>65370,57314.544646</TimeChanged>
 <TimeCreated>62657,53384.637236</TimeCreated>
 
 <Parameter name="Storage">
@@ -2590,23 +2590,34 @@ Returns if an extension can </Description>
 	
 	Try{
 		
-		//Not entirely sure how to handle this - perhaps we will call Deploy multiple times - once per system...
-		//but if we do that we have to recreate the import request everytime
-		//if we passed in the list of system, we could create it once and post it multiple times.
-		//catching errors and doing the rollback may be easier in COS as well
-		//The simplest solution right now is to call this method for each target and recreate the import request each time
-		//so we'll start with that
+		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
 		s tResponse="-------------------------------"_$C(10)
 		s tResponse=tResponse_"Beginning deployment to "_pTargetHost_":"_pTargetPort_$C(10)
-		s tResponse=tResponse_"-------------------------------"_$C(10)		
+		s tResponse=tResponse_"-------------------------------"_$C(10)
+		
+		//Identify the Configuration Script and set it to the ImportRequest
+		s tSC = ##class(Ens.Deployment.Deploy).GeneratePackageXMLVDOC(tDeploymentFile,.tDeploymentVDOC)
+		$$$ThrowOnError(tSC)
+		
+		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(tDeploymentFile,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
+		$$$ThrowOnError(tSC)
+		
+		s (tItemName,tCallBack) = ""
+		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
+			if $G(tDeployDetails("Items",tItemName,"Type"))="MAC" {
+				if $P(tItemName,".",1)="ConfigScripts" {
+					s tCallBack = "^"_$P(tItemName,".",1,$LENGTH(tItemName,".")-1)
+				}
+			}
+		}
+		
+		s tImportRequest.CallBackMethod = tCallBack		
 		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
 		
-		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
-		s tImportRequest.CallBackMethod = "" //how do we determine the config script?
 		
 		s tImportObject = ##class(User.SourceControl.Deploy.ImportObject).%New()
 		s tSC = tImportObject.ObjectStream.CopyFrom(tDeployStream) $$$ThrowOnError(tSC)
