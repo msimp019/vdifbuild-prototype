@@ -24,16 +24,16 @@ spawn csession $environment -U $namespace
 # expect "${namespace}>" { send "Do ##class(%SYSTEM.OBJ).Delete(\"HS.Local.VA*\")\r" } timeout { exit 1 }
 
 # Deploy RC.Channels.Edge* Classes
-expect "${namespace}>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/BuildInstaller.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
+expect "${namespace}>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace/User/SourceControl/Build\","*.cls","ck",,1)\r" } timeout { exit 1 }
 
 # Run Edge Setup
 expect "${namespace}>" { send "Write ##class(User.SourceControl.Build.Installer).setup()\r" } timeout { exit 1 }
 
 expect "${namespace}>" { send "ZN \"${buildNamespace}\"\r" } timeout { exit 1 }
 
-expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Git.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
+expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\","*.cls","ck",,1)\r" } timeout { exit 1 }
 
-expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).Load(\"$workspace/SourceControl.Deploy.cls.xml\",\"cbfk\")\r" } timeout { exit 1 }
+expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\","*.mac","ck",,1)\r" } timeout { exit 1 }
 
 expect "$buildNamespace>" { send "Do ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$gitURL\",\"https\",\"Matthew Simpson\",\"matthew.simpson@readycomputing.com\")\r" } timeout { exit 1 }
 
