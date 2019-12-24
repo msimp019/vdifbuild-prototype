@@ -21,7 +21,7 @@ Parameter InstallNamespace = "HSCUSTOM";
 Parameter IsSYNC = 0;
 
 /// Git menu commands
-Parameter GitMenuItems = ",Clone Repository,Status,Switch to Branch,Load Branch,";
+Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Branch,";
 
 /// Menu Items that show, but are only enabled when on a Feature branch.
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
@@ -275,9 +275,9 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Pull from Develop" {
-			s tCommand = tCommand_" merge develop"
+			s tCommand = tCommand_" merge origin/develop"
 		} elseif tCommandName = "Pull from Team" {
-			s tCommand = tCommand_" merge "_..TeamBranch()
+			s tCommand = tCommand_" merge origin/"_..TeamBranch()
 		} elseif tCommandName = "Diff with Team" {
 			
 			s tCurrentBranch = ..CurrentBranch()
@@ -1125,6 +1125,11 @@ ClassMethod LoadBranchLocal(ByRef pOutput As %String) As %Status
 		
 		s (tErrors,tLoaded)=""
 		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xml","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xsl","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.cls","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.mac","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.lut","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.hl7","cbfk",.tErrors,1,.tLoaded)
 		
 		CLOSE outputfile
 		
