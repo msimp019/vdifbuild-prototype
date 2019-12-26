@@ -27,7 +27,10 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Push,Pull,Pull from Develop,Create Feature Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,";
+
+/// Menu Items that show, but are only enabled when on a Team branch.
+Parameter GitReleaseMenuItems = ",Commit,Push,Pull,";
 
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
@@ -62,6 +65,11 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail"))
 ClassMethod TeamBranch() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch"))
+}
+
+ClassMethod ReleaseBranchBase() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase"))
 }
 
 /// Returns root temp folder
@@ -177,6 +185,7 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = settings("personName")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = settings("personEmail")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = $G(settings("teamBranch"))
+    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase") = $G(settings("releaseBranchBase"))
     
     If $System.Security.Check("AH_SourceControlAdmin","USE") {    
 	    // set Repository url - example: bitbucket.org/readycomputinginc/alohr.git
@@ -267,16 +276,36 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Create Release Branch" {
-			//consider adding checkbox to allow push to be optional, but currently it is default behavior
+			//switch to release base branch and pull it, in prep for diff with feature branch
+			//The release base branch is the int branch for the first target environment for deployment
+			s tSwitchCommand = tCommand_" checkout "_..ReleaseBranchBase()
+			s tSC = ..RunCmd(tSwitchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			//Pull just to ensure the release branch base is up to date locally before creating release branch
+			s tPullCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
+			
 			//should add syntax checking for branch names
 			s tBranchName = pSettings(tCommandName)
 			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
+			
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Pull from Develop" {
+
+			//Pull just to ensure the release branch base is up to date locally before creating release branch
+			s tPullCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
+
 			s tCommand = tCommand_" merge origin/develop"
 		} elseif tCommandName = "Pull from Team" {
+			
+			//Pull just to ensure the release branch base is up to date locally before creating release branch
+			s tPullCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
+
 			s tCommand = tCommand_" merge origin/"_..TeamBranch()
 		} elseif tCommandName = "Diff with Team" {
 			
@@ -432,6 +461,11 @@ ClassMethod IsFeatureMenuGitCommand(menuItemName As %String) As %Boolean [ CodeM
 $F(..#GitFeatureMenuItems, ","_menuItemName_",") > 0
 }
 
+ClassMethod IsReleaseMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
+{
+$F(..#GitReleaseMenuItems, ","_menuItemName_",") > 0
+}
+
 ClassMethod IsTeamMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
 {
 $F(..#GitTeamMenuItems, ","_menuItemName_",") > 0
@@ -454,15 +488,20 @@ ClassMethod UserAction(InternalName As %String, MenuName As %String, ByRef Targe
             s Action = 2
             #dim defNamespace As %String = ..#InstallNamespace
             Set Target="/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Setting.cls"
-        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) {
+        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) {
             s Action = 2
             s Target = "/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Dialogue.cls?UserAction="_menuItemName
-        } elseif (menuItemName = "Resolve Merge Conflicts") {
+        } elseif (menuItemName = "Create Release Branch") {
+            s Action = 2
+            s Target = "/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Dialogue.cls?UserAction="_menuItemName
+       	} elseif (menuItemName = "Resolve Merge Conflicts") {
             s Action = 2
             s Target = "/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.MergeConflicts.cls"        
         }
     }elseif (menuName [ "Context") {
         if (menuItemName = "Add To") {
+            s ec = ..AddToSourceControl(InternalName)
+        } elseif (menuItemName = "Add To Release") {
             s ec = ..AddToSourceControl(InternalName)
         } elseif (menuItemName = "Remove From") {
             s ec = ..RemoveFromSourceControl(InternalName)
