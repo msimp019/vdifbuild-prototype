@@ -22,8 +22,8 @@ pipeline {
         stage('Prepare Build Environment') {
             steps {
                 echo "Hello world"
-				
-				echo $foo
+				echo ${foo}
+				echo $Git_SourceBranch
 				echo $adam
 				//sh "rm -rf ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
 				//sh "mkdir ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
