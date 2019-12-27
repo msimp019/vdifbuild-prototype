@@ -20,8 +20,10 @@ pipeline {
         stage('Prepare Build Environment') {
             steps {
                 echo "Hello world"
-				echo $env.foo
-				echo $env.adam
+				def foo=env.foo
+				def adam=env.adam
+				echo $foo
+				echo $adam
 				//sh "rm -rf ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
 				//sh "mkdir ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
                 sh 'cd "${WORKSPACE}"'
