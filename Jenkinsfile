@@ -7,8 +7,8 @@ def Git_IntBranch = 'int/develop'
 def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
 date = new Date()
 def dateTimeStamp = date.format("yyyyMMddHHmmss")
-def adam=env.adam
-def foo=env.foo
+def adam='test123'
+def foo='test456'
 
 pipeline {
     agent any
