@@ -8,6 +8,7 @@ def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
 date = new Date()
 def dateTimeStamp = date.format("yyyyMMddHHmmss")
 def adam=env.adam
+def foo=env.foo
 
 pipeline {
     agent any
@@ -21,7 +22,7 @@ pipeline {
         stage('Prepare Build Environment') {
             steps {
                 echo "Hello world"
-				def foo=env.foo
+				
 				echo $foo
 				echo $adam
 				//sh "rm -rf ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
