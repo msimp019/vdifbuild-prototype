@@ -14,10 +14,12 @@ XData Menu
 <MenuBase>
 <Menu Name="Source Control Context Menu" Type="0">
 <MenuItem Name="Add To"/>
+<MenuItem Name="Add To Release"/>
 <MenuItem Name="Remove From"/>
 </Menu>
 <Menu Name="%SourceMenuContext" Type="1">
 <MenuItem Name="Add To"/>
+<MenuItem Name="Add To Release"/>
 <MenuItem Name="Remove From"/>
 </Menu>
 <Menu Name="Source Control Main Menu" Type="0">
@@ -92,6 +94,8 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1
+		} elseif (##class(User.SourceControl.Git.Utils).IsReleaseMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) {
+			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsTeamMenuGitCommand(name))&&(tCurrentBranch=##class(User.SourceControl.Git.Utils).TeamBranch()) {
 			s Enabled = 1
 		} elseif ##class(User.SourceControl.Git.Utils).IsMenuGitCommand(name) {
@@ -120,12 +124,18 @@ Method OnSourceMenuContextItem(itemName As %String, menuItemName As %String, ByR
 		Quit $$$OK
 	}
 	
-	if ##class(User.SourceControl.Git.Utils).IsInSourceControl(itemName) {
-		if menuItemName="Add To" Set Enabled = -1
-		If menuItemName="Remove From" Set Enabled = 1
-	} else {
-		if menuItemName="Add To" Set Enabled = 1
-		if menuItemName="Remove From" Set Enabled = -1
+	s tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
+	s Enabled = 0
+	if (menuItemName="Add To Release") && ($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) {
+		 Set Enabled = 1
+	} elseif ($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
+	
+		if ##class(User.SourceControl.Git.Utils).IsInSourceControl(itemName) {
+			If menuItemName="Remove From" Set Enabled = 1
+		} else {
+			if menuItemName="Add To" Set Enabled = 1
+		}
+	
 	}
 		
 	Quit $$$OK

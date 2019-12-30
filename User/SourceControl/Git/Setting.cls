@@ -56,6 +56,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <text id="personName" name="personName" label="Your Name:" title="Your Name" required="true" size="100"/>
 <text id="personEmail" name="personEmail" label="Your Email:" title="you@example.com" required="true" size="100"/>
 <text id="teamBranch" name="teamBranch" label="Team Branch:" title="example: team-dev/teamA" required="true" size="100"/>
+<text id="releaseBranchBase" name="releaseBranchBase" label="Release Branch Base:" title="example: int/sqa2c" required="true" size="100"/>
 <text id="repoProtocol" name="repoProtocol" label="Repository Protocol:" title="http or https" required="true" size="100"/>
 <text id="repoURL" name="repoURL" label="Repository URL:" title="(e.g. c:\temp)" required="true" size="100"/>
 <text id="repoBaseFolder" name="repoBaseFolder" label="Base path for all user's repositories:" title="(e.g. c:\temp)" required="true" size="100"/>
@@ -63,7 +64,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 </form>
 </fieldSet>
 <spacer height="20"/>
-<fieldSet legend="Actions">
+<fieldSet legend="Actions" hidden="true">
 <spacer height="20"/>
 <link id="CloneLink" href="User.SourceControl.Git.Dialogue.cls?UserAction=Clone Repository" disabled="true" caption="Clone Repository" target="_self" />
 <link id="StatusLink" href="User.SourceControl.Git.Dialogue.cls?UserAction=Status" disabled="true" caption="Status" target="_self" />
@@ -93,6 +94,7 @@ ClassMethod SubmitForm(pSubmit As %ZEN.Submit) As %Status
 	Set tSettings("personName")=pSubmit.%GetValue("personName")
 	Set tSettings("personEmail")=pSubmit.%GetValue("personEmail")
 	Set tSettings("teamBranch")=pSubmit.%GetValue("teamBranch")
+	Set tSettings("releaseBranchBase")=pSubmit.%GetValue("releaseBranchBase")
 	d ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 	QUIT $$$OK
 }
@@ -131,34 +133,37 @@ Method %OnAfterCreatePage() As %Status
 	Set tCtrl=..%GetComponentById("teamBranch")
 	Set tCtrl.value=##class(User.SourceControl.Git.Utils).TeamBranch()
 	
-	if '##class(User.SourceControl.Git.Utils).NeedSettings() {
-		if '##class(User.SourceControl.Git.Utils).IsNamespaceInGit() {
-			Set tCtrl=..%GetComponentById("CloneLink")
-			Set tCtrl.disabled = 0
-		} else {
-			Set tCtrl=..%GetComponentById("StatusLink")
-			Set tCtrl.disabled = 0
-			Set tCtrl=..%GetComponentById("CommitLink")
-			Set tCtrl.disabled = 0
-			
-		}
-	}
+	Set tCtrl=..%GetComponentById("releaseBranchBase")
+	Set tCtrl.value=##class(User.SourceControl.Git.Utils).ReleaseBranchBase()
 	
-	if $System.Security.Check("AH_SourceControlAdmin","USE") {
-		//This feature allows any admin to run any git command against any local repository!
-		Set tFS=..%GetComponentById("fsGit")
-		Set tFS.hidden = 0
-		
-		s tUserList=""
-		s tUser=""
-		For { s tUser = $O(^Git("%user",tUser)) Q:tUser=""
-			s tUserList = tUserList_","_tUser
-		}
-		Set tCombo=..%GetComponentById("cmbGitUsers")
-		Set tCombo.displayList = tUserList
-		Set tCombo.valueList = tUserList
-		
-	}
+#;	if '##class(User.SourceControl.Git.Utils).NeedSettings() {
+#;		if '##class(User.SourceControl.Git.Utils).IsNamespaceInGit() {
+#;			Set tCtrl=..%GetComponentById("CloneLink")
+#;			Set tCtrl.disabled = 0
+#;		} else {
+#;			Set tCtrl=..%GetComponentById("StatusLink")
+#;			Set tCtrl.disabled = 0
+#;			Set tCtrl=..%GetComponentById("CommitLink")
+#;			Set tCtrl.disabled = 0
+#;			
+#;		}
+#;	}
+	
+#;	if $System.Security.Check("AH_SourceControlAdmin","USE") {
+#;		//This feature allows any admin to run any git command against any local repository!
+#;		Set tFS=..%GetComponentById("fsGit")
+#;		Set tFS.hidden = 0
+#;		
+#;		s tUserList=""
+#;		s tUser=""
+#;		For { s tUser = $O(^Git("%user",tUser)) Q:tUser=""
+#;			s tUserList = tUserList_","_tUser
+#;		}
+#;		Set tCombo=..%GetComponentById("cmbGitUsers")
+#;		Set tCombo.displayList = tUserList
+#;		Set tCombo.valueList = tUserList
+#;		
+#;	}
 		
 	Quit $$$OK
 }
