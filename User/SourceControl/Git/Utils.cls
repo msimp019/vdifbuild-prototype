@@ -1312,6 +1312,17 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		s tSC = $System.OBJ.Load(tLoadList,"cbfk",,.loadedList) $$$ThrowOnError(tSC)
 		
 		zw loadedList
+		set name=$O(loadedList(""))
+		while name'=""
+		{
+			if $piece(name,".")="ConfigScripts"
+			{
+				set command="do ^"_$piece(name,".",1,*-1)
+				zw command
+				XECUTE command
+			}
+			set name=$O(loadedList(name))
+		}
 		
 		s tProjectName = $TR(pIntegrationBranch,"/","")
 		s tProductionName = ""
