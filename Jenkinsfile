@@ -21,6 +21,7 @@ pipeline {
     stages {
         stage('Prepare Build Environment') {
             steps {
+				sh whoami
 				//sh "rm -rf ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
 				//sh "mkdir ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
                 sh 'cd "${WORKSPACE}"'
