@@ -205,7 +205,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
-	w "HanleDialogue",!
+	w "HandleDialogue",!
 	zw pSettings
 	
 	Try {
@@ -1285,8 +1285,11 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
+		w " we got this"
+		
 		s tLoadList = ""
 		for i=1:1:tImportList {
+			w !,i_"looping"
 			s tItem=tImportList(i)
 			s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
