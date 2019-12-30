@@ -1303,14 +1303,18 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 
 		}
 		
+		w "Line 1306"
 		//a load list is compiled here so that multiple files can be loaded at one so that class DependsOn statements can be honored
 		//But concern is whether the tLoadList may become too large?
-		s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.Load(tLoadList,"cbfk",,.loadedList) $$$ThrowOnError(tSC)
+		
+		zw loadedList
 		
 		s tProjectName = $TR(pIntegrationBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
 		
+		w "line1315"
 		Set tProductionClassIncluded = 0
 		Set tComments = "Deploy Package created programatically."
 		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,pFilename,tProductionName,tComments,tProductionClassIncluded)
