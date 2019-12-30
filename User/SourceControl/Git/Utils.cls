@@ -205,6 +205,8 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
+	w "HanleDialogue",!
+	zw pSettings
 	
 	Try {
 		
@@ -1270,8 +1272,12 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
+		w "This is the diff object",!
+		zw tOutput
+		w !
 		Merge tImportList = tOutput
-		
+		zw tImportList
+		w !
 		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
 		Kill tSettings
 		s tSettings("Switch to Branch")=pSourceBranch
