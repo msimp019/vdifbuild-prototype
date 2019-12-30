@@ -17,7 +17,7 @@ Parameter OUTPUTTYPEATTRIBUTE = 1;
 
 /// TODO: add arguments and implementation.
 /// ImportClass
-Method ImportClass(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
+Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException

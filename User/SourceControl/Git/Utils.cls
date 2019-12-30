@@ -1311,13 +1311,17 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		//But concern is whether the tLoadList may become too large?
 		s tSC = $System.OBJ.Load(tLoadList,"cbfk",,.loadedList) $$$ThrowOnError(tSC)
 		
+		k ^XABSMAC
+		s ^XABSMAC=0
 		zw loadedList
 		set name=$O(loadedList(""))
 		while name'=""
 		{
 			if $piece(name,".")="ConfigScripts"
 			{
-				set command="do ^"_$piece(name,".",1,*-1)
+				s ^XABSMAC=^XABSMAC+1
+				s ^XABSMAC(^XABSMAC)=$piece(name,".",1,*-1)
+				set command="do ^"_^XABSMAC(^XABSMAC)
 				zw command
 				XECUTE command
 			}
@@ -1438,7 +1442,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	#dim tDeployStatus As %Boolean = 1
 	
 	Try{
-		
+		zw ^XABSMAC
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
 		s tResponse="-------------------------------"_$C(10)
@@ -1452,6 +1456,8 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(pFilename,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
 		$$$ThrowOnError(tSC)
 		
+		zw tDeployDetails
+		
 		s (tItemName,tCallBack) = ""
 		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
 			if $G(tDeployDetails("Items",tItemName,"Type"))="MAC" {
@@ -1460,6 +1466,8 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 				}
 			}
 		}
+		
+		zw tCallBack
 		
 		s tImportRequest.CallBackMethod = tCallBack		
 		
@@ -1480,7 +1488,9 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
-		Set tResponse = tServiceClient.ImportClass(tImportRequest,.tDeployStatus)
+		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
+		
+		
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
