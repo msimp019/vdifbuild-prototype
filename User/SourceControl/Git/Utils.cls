@@ -1444,6 +1444,10 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	#dim tDeployStatus As %Boolean = 1
+	zw pFilename
+	zw pTargetHost
+	zw pTargetPort
+	zw pTargetNamespace
 	
 	Try{
 		zw ^XABSMAC
