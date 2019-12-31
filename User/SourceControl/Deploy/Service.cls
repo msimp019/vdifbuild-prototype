@@ -25,6 +25,10 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 	s tReturn = ""
 	s pDeployStatus = 1
 	
+	w !,"in the service",!!
+	zw pRequest
+	w !!
+	
 	try {
 		Set outputfile=##class(%File).TempFilename("compile")
 		
