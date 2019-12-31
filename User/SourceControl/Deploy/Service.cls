@@ -82,6 +82,7 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		while iter.%GetNext(.i,.script)
 		{
 			set command="do ^"_script
+			write !!,"Executing script:"
 			zw command
 			XECUTE command
 		}
