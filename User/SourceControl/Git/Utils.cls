@@ -1299,23 +1299,8 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		
 		//a load list is compiled here so that multiple files can be loaded at one so that class DependsOn statements can be honored
 		//But concern is whether the tLoadList may become too large?
-		s tSC = $System.OBJ.Load(tLoadList,"cbfk",,.loadedList) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
 		
-		k ^XABSMAC
-		s ^XABSMAC=0
-		zw loadedList
-		set name=$O(loadedList(""))
-		while name'=""
-		{
-			zw name
-			if $piece(name,".")="ConfigScripts"
-			{
-				s ^XABSMAC=^XABSMAC+1
-				s ^XABSMAC(^XABSMAC)=$piece(name,".",1,*-1)
-			}
-			set name=$O(loadedList(name))
-		}
-		zw ^XABSMAC
 		s tProjectName = $TR(pIntegrationBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
@@ -1454,16 +1439,6 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 			}
 		}
 		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
-
-		
-		zw ^XABSMAC
-		w !!
-		
- //		for i=1:1:^XABSMAC
- //		{
- //			do ConfigScripts.%Push(^XABSMAC(i))
- //		}
- //		zw ConfigScripts
  		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
