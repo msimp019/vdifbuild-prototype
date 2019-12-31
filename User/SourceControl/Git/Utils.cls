@@ -1484,7 +1484,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		{
 			do ConfigScripts.%Push(^XABSMAC(i))
 		}
-		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
+ //		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
 		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()

@@ -31,6 +31,8 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		OPEN outputfile:"WSN"
 		USE outputfile
 		
+		w "namespace"
+		w $NAMESPACE
 		w !,"in the service",!!
 		zw pRequest
 		w !!
