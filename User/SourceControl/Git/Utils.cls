@@ -1481,7 +1481,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		w !!
 		for i=1:1:^XABSMAC
 		{
-			s tSC = tImportRequest.ConfigScripts.Insert(^XABSMAC(i)) $$$ThrowOnError(tSC)
+ //			s tSC = tImportRequest.ConfigScripts.Insert(^XABSMAC(i)) $$$ThrowOnError(tSC)
 		}
 		zw tImportRequest
 		
