@@ -15,9 +15,9 @@ Parameter USECLASSNAMESPACES = 1;
 /// Use xsi:type attribute for literal types.
 Parameter OUTPUTTYPEATTRIBUTE = 1;
 
-/// TODO: run config scripts.
-/// Deploy Package and Run Config Scripts
 Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
+/// TODO: add arguments and implementation.
+/// ImportClass
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -30,12 +30,6 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		
 		OPEN outputfile:"WSN"
 		USE outputfile
-		
-		w "namespace"
-		w $NAMESPACE
-		w !,"in the service",!!
-		zw pRequest
-		w !!
 		
 		s tBusinessItems = 0
 		
@@ -200,4 +194,3 @@ Method Test() As %String [ WebMethod ]
 Parameter SrcVer = 2;
 
 }
-
