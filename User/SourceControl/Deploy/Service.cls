@@ -70,11 +70,25 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
 				} else {
 					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
-				}
+				}	
 				ZN tNS
 			}
 		}
 		
+		write !,"Beginning Configuration Scripts",!
+		zw pRequest.ConfigScriptsJSON
+		s ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+		zw ConfigScripts
+		set iter=ConfigScripts.%GetIterator()
+		zw iter
+		while iter.%GetNext(.i,.script)
+		{
+			zw i
+			zw script
+			set command="do ^"_script
+			zw command
+			XECUTE command
+			
 		}
 		
 		w !,"done with config",!!
