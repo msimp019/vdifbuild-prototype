@@ -1328,6 +1328,7 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 			set name=$O(loadedList(name))
 		}
 		
+		zw ^XABSMAC
 		s tProjectName = $TR(pIntegrationBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
@@ -1450,7 +1451,6 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	zw pTargetNamespace
 	
 	Try{
-		zw ^XABSMAC
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
 		s tResponse="-------------------------------"_$C(10)
@@ -1478,14 +1478,16 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		zw tCallBack
 		s tImportRequest.CallBackMethod = tCallBack
 		
+		zw ^XABSMAC
 		w !!
 		s ConfigScripts=[]
 		for i=1:1:^XABSMAC
 		{
 			do ConfigScripts.%Push(^XABSMAC(i))
 		}
+		zw ConfigScripts
  		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
-		
+		zw tImportRequest
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
