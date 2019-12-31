@@ -1484,7 +1484,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 
 		
 		
-		Set tResponse = tServiceClient.ImportClass(tImportRequest,.tDeployStatus)
+		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
