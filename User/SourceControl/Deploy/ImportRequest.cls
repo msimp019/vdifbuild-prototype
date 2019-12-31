@@ -5,6 +5,8 @@ Property Objects As list Of User.SourceControl.Deploy.ImportObject;
 
 Property CallBackMethod As %String(MAXLEN = 512);
 
+Property ConfigScripts As list Of %String(MAXLEN = 512);
+
 /// Revision number of this class
 Parameter SrcVer = 2;
 
@@ -19,6 +21,12 @@ Storage Default
 </Value>
 <Value name="3">
 <Value>CallBackMethod</Value>
+</Value>
+<Value name="4">
+<Value>ConfigScripts</Value>
+</Value>
+<Value name="5">
+<Value>ConfigScriptsMacs</Value>
 </Value>
 </Data>
 <DataLocation>^User.SourceCF138.ImportRequestD</DataLocation>

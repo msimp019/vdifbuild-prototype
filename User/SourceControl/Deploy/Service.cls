@@ -15,8 +15,8 @@ Parameter USECLASSNAMESPACES = 1;
 /// Use xsi:type attribute for literal types.
 Parameter OUTPUTTYPEATTRIBUTE = 1;
 
-/// TODO: add arguments and implementation.
-/// ImportClass
+/// TODO: run config scripts.
+/// Deploy Package and Run Config Scripts
 Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
 {
 	#dim tSC As %Status = $$$OK
@@ -72,12 +72,23 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
 				} else {
 					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
-				}
+				}	
 				ZN tNS
 			}
 		}
 		
-		if pRequest.CallBackMethod '= "" {
+		write !,"Beginning Configuration Scripts",!
+		For i=1:1:pRequest.ConfigScripts.Count() 
+		{
+			s script=pRequest.ConfigScripts.GetAt(i)
+			set command="do ^"_^XABSMAC(^XABSMAC)
+			zw command
+			XECUTE command
+			
+		}
+		
+		if pRequest.CallBackMethod '= "" 
+		{
 			 XECUTE "do "_pRequest.CallBackMethod
 		}
 		

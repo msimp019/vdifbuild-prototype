@@ -1435,6 +1435,10 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 }
 
+ClassMethod test123(X As %DynamicArray)
+{
+}
+
 ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As %String, pTargetNamespace As %String) As %Status
 {
 	#dim tSC As %Status = $$$OK
@@ -1468,8 +1472,16 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		}
 		
 		zw tCallBack
+		s tImportRequest.CallBackMethod = tCallBack
 		
-		s tImportRequest.CallBackMethod = tCallBack		
+		w !!
+		for i=1:1:^XABSMAC
+		{
+			s tSC = tImportRequest.ConfigScripts.Insert(^XABSMAC(i)) $$$ThrowOnError(tSC)
+		}
+		zw tImportRequest
+		
+			
 		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
