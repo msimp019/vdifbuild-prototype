@@ -140,9 +140,7 @@ Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDep
 		OPEN outputfile:"WSN"
 		USE outputfile
 		
-		if pRequest.CallBackMethod '= "" {
-			 XECUTE "do "_pRequest.CallBackMethod
-		}
+		// TODO: Implement Undo Scripts
 		
 		s tSC = ##class(Ens.Deployment.Deploy).RollbackLastDeployment(,,,"LC")
 		//Don't throw error here, check for error in tSC later
