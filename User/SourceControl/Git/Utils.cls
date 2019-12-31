@@ -1479,13 +1479,11 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tImportRequest.CallBackMethod = tCallBack
 		
 		w !!
+		s tImportRequest.ConfigScripts=[]
 		for i=1:1:^XABSMAC
 		{
- //			s tSC = tImportRequest.ConfigScripts.Insert(^XABSMAC(i)) $$$ThrowOnError(tSC)
+			do tImportRequest.ConfigScripts.%Push(^XABSMAC(i))
 		}
-		zw tImportRequest
-		
-			
 		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
@@ -1496,6 +1494,9 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tSC = tImportObject.ObjectStream.CopyFrom(tDeployStream) $$$ThrowOnError(tSC)
 		s tImportObject.Name = ##class(%File).GetFilename(pFilename)
 		s tSC = tImportRequest.Objects.Insert(tImportObject) $$$ThrowOnError(tSC)
+		
+		zw tImportRequest
+		
 		
 		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
