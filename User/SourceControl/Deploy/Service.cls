@@ -70,7 +70,7 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
 				} else {
 					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
-				}	
+				}
 				ZN tNS
 			}
 		}
@@ -90,8 +90,6 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 			XECUTE command
 			
 		}
-		
-		w !,"done with config",!!
 		
 		CLOSE outputfile
 		
