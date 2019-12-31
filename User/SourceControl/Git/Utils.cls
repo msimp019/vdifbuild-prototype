@@ -1317,6 +1317,7 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		set name=$O(loadedList(""))
 		while name'=""
 		{
+			zw name
 			if $piece(name,".")="ConfigScripts"
 			{
 				s ^XABSMAC=^XABSMAC+1
