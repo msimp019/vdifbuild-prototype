@@ -62,26 +62,26 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 			}
 		}
 		
-		For i=1:1:tBusinessItems {
-			s tDeployItemName = tBusinessItems(i)
-			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
-			//check to ensure the target namespace exists on this instance
-			if ($D(^%SYS("Ensemble","InstalledNamespace",tTargetNamespace))=1) && ($System.Mirror.IsPrimary() || '$System.Mirror.IsMember()) {
-				s tNS = $NAMESPACE
-				ZN tTargetNamespace
-				
-				s tFilename = $System.Util.InstallDirectory()_$E(tDeployItemName,2,*)
-				if ##class(%File).Exists(tFilename) {
-					s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
-					s tRollbackFilename = $System.Util.InstallDirectory()_"/mgr/Temp/"_##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")_"_"_$P(tDeployItemName,"/",7)
-					s tSCDeploy = ##class(Ens.Deployment.Deploy).DeployCode(tFilename,tProduction,1,tRollbackFilename,"C")
-					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
-				} else {
-					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
-				}	
-				ZN tNS
-			}
-		}
+ //		For i=1:1:tBusinessItems {
+ //			s tDeployItemName = tBusinessItems(i)
+ //			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
+ //			//check to ensure the target namespace exists on this instance
+ //			if ($D(^%SYS("Ensemble","InstalledNamespace",tTargetNamespace))=1) && ($System.Mirror.IsPrimary() || '$System.Mirror.IsMember()) {
+ //				s tNS = $NAMESPACE
+ //				ZN tTargetNamespace
+ //				
+ //				s tFilename = $System.Util.InstallDirectory()_$E(tDeployItemName,2,*)
+ //				if ##class(%File).Exists(tFilename) {
+ //					s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
+ //					s tRollbackFilename = $System.Util.InstallDirectory()_"/mgr/Temp/"_##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")_"_"_$P(tDeployItemName,"/",7)
+ //					s tSCDeploy = ##class(Ens.Deployment.Deploy).DeployCode(tFilename,tProduction,1,tRollbackFilename,"C")
+ //					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
+ //				} else {
+ //					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
+ //				}	
+ //				ZN tNS
+ //			}
+ //		}
 		
 		write !,"Beginning Configuration Scripts",!
  //		zw pRequest.ConfigScriptsJSON
@@ -95,10 +95,10 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
  //			
  //		}
  //		
-		if pRequest.CallBackMethod '= "" 
-		{
-			 XECUTE "do "_pRequest.CallBackMethod
-		}
+ //		if pRequest.CallBackMethod '= "" 
+ //		{
+ //			 XECUTE "do "_pRequest.CallBackMethod
+ //		}
 		
 		CLOSE outputfile
 		
