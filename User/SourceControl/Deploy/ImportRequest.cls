@@ -23,9 +23,6 @@ Storage Default
 <Value>CallBackMethod</Value>
 </Value>
 <Value name="4">
-<Value>ConfigScripts</Value>
-</Value>
-<Value name="5">
 <Value>ConfigScriptsJSON</Value>
 </Value>
 </Data>
@@ -38,4 +35,3 @@ Storage Default
 }
 
 }
-
