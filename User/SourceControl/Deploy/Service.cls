@@ -84,12 +84,13 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		}
 		
 		write !,"Beginning Configuration Scripts",!
-		For i=1:1:pRequest.ConfigScripts.Count() 
+		zw pRequest.ConfigScriptsJSON
+		set iter=pRequest.ConfigScriptsJSON.%GetIterator()
+		while iter.%GetNext(,.script)
 		{
-			s script=pRequest.ConfigScripts.GetAt(i)
-			set command="do ^"_^XABSMAC(^XABSMAC)
+			set command="do ^"_script
 			zw command
-			XECUTE command
+ //			XECUTE command
 			
 		}
 		
