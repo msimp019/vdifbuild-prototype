@@ -84,17 +84,17 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		}
 		
 		write !,"Beginning Configuration Scripts",!
-		zw pRequest.ConfigScriptsJSON
-		s ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
-		set iter=ConfigScriptsJSON.%GetIterator()
-		while iter.%GetNext(,.script)
-		{
-			set command="do ^"_script
-			zw command
- //			XECUTE command
-			
-		}
-		
+ //		zw pRequest.ConfigScriptsJSON
+ //		s ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+ //		set iter=ConfigScriptsJSON.%GetIterator()
+ //		while iter.%GetNext(,.script)
+ //		{
+ //			set command="do ^"_script
+ //			zw command
+ // //			XECUTE command
+ //			
+ //		}
+ //		
 		if pRequest.CallBackMethod '= "" 
 		{
 			 XECUTE "do "_pRequest.CallBackMethod
