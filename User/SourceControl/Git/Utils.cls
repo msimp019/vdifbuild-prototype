@@ -205,8 +205,6 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
-	w "HandleDialogue",!
-	zw pSettings
 	
 	Try {
 		
@@ -1272,12 +1270,8 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
-		w "This is the diff object",!
-		zw tOutput
-		w !
 		Merge tImportList = tOutput
-		zw tImportList
-		w !
+		
 		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
 		Kill tSettings
 		s tSettings("Switch to Branch")=pSourceBranch
@@ -1285,11 +1279,8 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
-		w " we got this"
-		
 		s tLoadList = ""
 		for i=1:1:tImportList {
-			w !,i_"looping"
 			s tItem=tImportList(i)
 			s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
@@ -1306,7 +1297,6 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 
 		}
 		
-		w "Line 1306"
 		//a load list is compiled here so that multiple files can be loaded at one so that class DependsOn statements can be honored
 		//But concern is whether the tLoadList may become too large?
 		s tSC = $System.OBJ.Load(tLoadList,"cbfk",,.loadedList) $$$ThrowOnError(tSC)
@@ -1322,19 +1312,14 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 			{
 				s ^XABSMAC=^XABSMAC+1
 				s ^XABSMAC(^XABSMAC)=$piece(name,".",1,*-1)
-				set command="do ^"_^XABSMAC(^XABSMAC)
-				zw command
-				XECUTE command
 			}
 			set name=$O(loadedList(name))
 		}
-		
 		zw ^XABSMAC
 		s tProjectName = $TR(pIntegrationBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
 		
-		w "line1315"
 		Set tProductionClassIncluded = 0
 		Set tComments = "Deploy Package created programatically."
 		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,pFilename,tProductionName,tComments,tProductionClassIncluded)
@@ -1437,21 +1422,14 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 }
 
-ClassMethod test123(X As %DynamicArray)
-{
-}
-
 ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As %String, pTargetNamespace As %String) As %Status
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	#dim tDeployStatus As %Boolean = 1
-	zw pFilename
-	zw pTargetHost
-	zw pTargetPort
-	zw pTargetNamespace
 	
 	Try{
+		
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
 		s tResponse="-------------------------------"_$C(10)
@@ -1465,8 +1443,6 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(pFilename,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
 		$$$ThrowOnError(tSC)
 		
-		zw tDeployDetails
-		
 		s (tItemName,tCallBack) = ""
 		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
 			if $G(tDeployDetails("Items",tItemName,"Type"))="MAC" {
@@ -1476,8 +1452,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 			}
 		}
 		
-		zw tCallBack
-		s tImportRequest.CallBackMethod = tCallBack
+		s tImportRequest.CallBackMethod = tCallBack		
 		
 		zw ^XABSMAC
 		w !!
@@ -1488,7 +1463,6 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		}
 		zw ConfigScripts
  		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
-		zw tImportRequest
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
@@ -1499,9 +1473,6 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tImportObject.Name = ##class(%File).GetFilename(pFilename)
 		s tSC = tImportRequest.Objects.Insert(tImportObject) $$$ThrowOnError(tSC)
 		
-		zw tImportRequest
-		
-		
 		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
 		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
@@ -1509,9 +1480,9 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
-		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
 		
 		
+		Set tResponse = tServiceClient.ImportClass(tImportRequest,.tDeployStatus)
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
@@ -1540,4 +1511,3 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 }
 
 }
-
