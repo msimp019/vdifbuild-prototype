@@ -25,9 +25,6 @@ Storage Default
 <Value name="4">
 <Value>ConfigScripts</Value>
 </Value>
-<Value name="5">
-<Value>ConfigScriptsMacs</Value>
-</Value>
 </Data>
 <DataLocation>^User.SourceCF138.ImportRequestD</DataLocation>
 <DefaultData>ImportRequestDefaultData</DefaultData>
