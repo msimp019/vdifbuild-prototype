@@ -85,7 +85,8 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		
 		write !,"Beginning Configuration Scripts",!
 		zw pRequest.ConfigScriptsJSON
-		set iter=pRequest.ConfigScriptsJSON.%GetIterator()
+		s ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+		set iter=ConfigScriptsJSON.%GetIterator()
 		while iter.%GetNext(,.script)
 		{
 			set command="do ^"_script
