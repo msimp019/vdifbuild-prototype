@@ -79,7 +79,7 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		zw pRequest.ConfigScriptsJSON
 		s ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
 		zw ConfigScripts
-		set iter=ConfigScriptsJSON.%GetIterator()
+		set iter=ConfigScripts.%GetIterator()
 		zw iter
 		while iter.%GetNext(.i,.script)
 		{
@@ -92,11 +92,6 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 		}
 		
 		w !,"done with config",!!
-		
-		if pRequest.CallBackMethod '= "" 
-		{
-			 XECUTE "do "_pRequest.CallBackMethod
-		}
 		
 		CLOSE outputfile
 		
