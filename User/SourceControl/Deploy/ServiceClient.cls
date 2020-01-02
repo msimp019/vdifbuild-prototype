@@ -19,9 +19,9 @@ Parameter SERVICENAME = "HDS";
 /// This is the SOAP version supported by the service.
 Parameter SOAPVERSION = 1.1;
 
-Method ImportClass(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
+Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
 {
- Quit ..WebMethod("ImportClass").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.ImportClass",.pRequest,.pDeployStatus)
+ Quit ..WebMethod("Deploy").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Deploy",.pRequest,.pDeployStatus)
 }
 
 Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]

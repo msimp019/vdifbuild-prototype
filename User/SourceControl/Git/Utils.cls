@@ -1376,7 +1376,7 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 		s tResponse=tResponse_"-------------------------------"_$C(10)		
 		
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
-		s tImportRequest.CallBackMethod = "" //how do we determine the config script?
+		// TODO: Rollback Scripts
 		
 		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
@@ -1428,17 +1428,18 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(pFilename,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
 		$$$ThrowOnError(tSC)
 		
-		s (tItemName,tCallBack) = ""
+		s ConfigScripts=[]
+		s tItemName = ""
 		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
 			if $G(tDeployDetails("Items",tItemName,"Type"))="MAC" {
 				if $P(tItemName,".",1)="ConfigScripts" {
-					s tCallBack = "^"_$P(tItemName,".",1,$LENGTH(tItemName,".")-1)
+					do ConfigScripts.%Push($P(tItemName,".",1,$LENGTH(tItemName,".")-1))
+					s tCallBack = "^"_$P(tItemName,".",1,*-1)
 				}
 			}
 		}
-		
-		s tImportRequest.CallBackMethod = tCallBack		
-		
+		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
+ 		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
@@ -1456,7 +1457,8 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
-		Set tResponse = tServiceClient.ImportClass(tImportRequest,.tDeployStatus)
+
+		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
@@ -1485,4 +1487,3 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 }
 
 }
-

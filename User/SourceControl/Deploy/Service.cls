@@ -15,9 +15,7 @@ Parameter USECLASSNAMESPACES = 1;
 /// Use xsi:type attribute for literal types.
 Parameter OUTPUTTYPEATTRIBUTE = 1;
 
-/// TODO: add arguments and implementation.
-/// ImportClass
-Method ImportClass(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
+Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -77,8 +75,15 @@ Method ImportClass(pRequest As User.SourceControl.Deploy.ImportRequest, Output p
 			}
 		}
 		
-		if pRequest.CallBackMethod '= "" {
-			 XECUTE "do "_pRequest.CallBackMethod
+		write !,"Beginning Configuration Scripts",!
+		zw pRequest.ConfigScriptsJSON
+		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+		set iter=ConfigScripts.%GetIterator()
+		while iter.%GetNext(.i,.script)
+		{
+			set command="do ^"_script
+			zw command
+			XECUTE command
 		}
 		
 		CLOSE outputfile
@@ -130,9 +135,7 @@ Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDep
 		OPEN outputfile:"WSN"
 		USE outputfile
 		
-		if pRequest.CallBackMethod '= "" {
-			 XECUTE "do "_pRequest.CallBackMethod
-		}
+		// TODO: Implement Undo Scripts
 		
 		s tSC = ##class(Ens.Deployment.Deploy).RollbackLastDeployment(,,,"LC")
 		//Don't throw error here, check for error in tSC later
@@ -177,4 +180,3 @@ Method Test() As %String [ WebMethod ]
 Parameter SrcVer = 2;
 
 }
-

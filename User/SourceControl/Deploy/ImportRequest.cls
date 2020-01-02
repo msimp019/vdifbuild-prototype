@@ -3,7 +3,7 @@ Class User.SourceControl.Deploy.ImportRequest Extends (%Persistent, %XML.Adaptor
 
 Property Objects As list Of User.SourceControl.Deploy.ImportObject;
 
-Property CallBackMethod As %String(MAXLEN = 512);
+Property ConfigScriptsJSON As %String(MAXLEN = 512);
 
 /// Revision number of this class
 Parameter SrcVer = 2;
@@ -18,7 +18,7 @@ Storage Default
 <Value>Objects</Value>
 </Value>
 <Value name="3">
-<Value>CallBackMethod</Value>
+<Value>ConfigScriptsJSON</Value>
 </Value>
 </Data>
 <DataLocation>^User.SourceCF138.ImportRequestD</DataLocation>
@@ -30,4 +30,3 @@ Storage Default
 }
 
 }
-

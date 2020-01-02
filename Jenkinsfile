@@ -2,9 +2,9 @@
 def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
-def Git_SourceBranch = 'develop'
-def Git_IntBranch = 'int/develop'
-def Git_RepoURL = 'github.com/msimp019/vdif-prototype.git'
+def Git_SourceBranch = env.Git_SourceBranch
+def Git_IntBranch = env.Git_IntBranch
+def Git_RepoURL = env.Git_RepoURL
 date = new Date()
 def dateTimeStamp = date.format("yyyyMMddHHmmss")
 
@@ -77,5 +77,4 @@ pipeline {
 		}
     }	
 }
-
 
