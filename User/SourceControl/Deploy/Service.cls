@@ -75,17 +75,8 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 			}
 		}
 		
-		write !,"Beginning Configuration Scripts",!
-		zw pRequest.ConfigScriptsJSON
 		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
-		set iter=ConfigScripts.%GetIterator()
-		while iter.%GetNext(.i,.script)
-		{
-			set command="do ^"_script
-			write !!,"Executing script:"
-			zw command
-			XECUTE command
-		}
+		do ..RunConfigRoutinesByMethodName(ConfigScripts,"Deploy")
 		
 		CLOSE outputfile
 		
@@ -123,6 +114,21 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 	Quit tReturn
 }
 
+ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMethod As %String)
+{
+		write !,"Running the "_pMethod_" method for Configuration Scripts",!
+		zw pRequest.ConfigScriptsJSON
+		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+		set iter=ConfigScripts.%GetIterator()
+		while iter.%GetNext(.i,.script)
+		{
+			set command="do "_pMethod_"^"_script_"(""EnvironmentParams"")"
+			write !!,"Executing script:"
+			zw command
+			XECUTE command
+		}
+}
+
 Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ WebMethod ]
 {
 	#dim tSC As %Status = $$$OK
@@ -136,7 +142,8 @@ Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDep
 		OPEN outputfile:"WSN"
 		USE outputfile
 		
-		// TODO: Implement Undo Scripts
+		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+		do ..RunConfigRoutinesByMethodName(ConfigScripts,"Revert")
 		
 		s tSC = ##class(Ens.Deployment.Deploy).RollbackLastDeployment(,,,"LC")
 		//Don't throw error here, check for error in tSC later
