@@ -117,8 +117,7 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMethod As %String)
 {
 		write !,"Running the "_pMethod_" method for Configuration Scripts",!
-		zw pRequest.ConfigScriptsJSON
-		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
+		write ConfigScripts.%ToJSON(),!
 		set iter=ConfigScripts.%GetIterator()
 		while iter.%GetNext(.i,.script)
 		{
