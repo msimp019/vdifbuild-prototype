@@ -1336,7 +1336,7 @@ ClassMethod LoadDeployment(pFilename) As %Status
 		if ##class(%File).Exists(pFilename) {
 			s tProduction = "" //$G(^Ens.Configuration("csp","LastProduction"))
 			Do ##class(Ens.Deployment.Utils).GenerateFileNames(pFilename,.tRollbackFile,.tLogFile,.tReportFile)
-			Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
+			Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 0, tWhereToLog = "LC"
 			s tSC = ##class(Ens.Deployment.Deploy).DeployCode(pFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
 			$$$ThrowOnError(tSC)
 		} else {
@@ -1376,7 +1376,9 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 		s tResponse=tResponse_"-------------------------------"_$C(10)		
 		
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
-		// TODO: Rollback Scripts
+		
+		set ConfigScripts=..ConfigScriptsFromImportRequest(pFilename)
+		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
 		
 		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
@@ -1407,20 +1409,8 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 }
 
-ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As %String, pTargetNamespace As %String) As %Status
+ClassMethod  ConfigScriptsFromImportRequest(pFilename As %String) as %DynamicArray
 {
-	#dim tSC As %Status = $$$OK
-	#dim e As %Exception.AbstractException
-	#dim tDeployStatus As %Boolean = 1
-	
-	Try{
-		
-		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
-		
-		s tResponse="-------------------------------"_$C(10)
-		s tResponse=tResponse_"Beginning deployment to "_pTargetHost_":"_pTargetPort_$C(10)
-		s tResponse=tResponse_"-------------------------------"_$C(10)
-		
 		//Identify the Configuration Script and set it to the ImportRequest
 		s tSC = ##class(Ens.Deployment.Deploy).GeneratePackageXMLVDOC(pFilename,.tDeploymentVDOC)
 		$$$ThrowOnError(tSC)
@@ -1438,6 +1428,24 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 				}
 			}
 		}
+		return ConfigScripts
+}
+
+ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As %String, pTargetNamespace As %String) As %Status
+{
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	#dim tDeployStatus As %Boolean = 1
+	
+	Try{
+		
+		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
+		
+		s tResponse="-------------------------------"_$C(10)
+		s tResponse=tResponse_"Beginning deployment to "_pTargetHost_":"_pTargetPort_$C(10)
+		s tResponse=tResponse_"-------------------------------"_$C(10)
+		
+		set ConfigScripts=..ConfigScriptsFromImportRequest(pFilename)
 		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
  		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
