@@ -1336,7 +1336,7 @@ ClassMethod LoadDeployment(pFilename) As %Status
 		if ##class(%File).Exists(pFilename) {
 			s tProduction = "" //$G(^Ens.Configuration("csp","LastProduction"))
 			Do ##class(Ens.Deployment.Utils).GenerateFileNames(pFilename,.tRollbackFile,.tLogFile,.tReportFile)
-			Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
+			Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 0, tWhereToLog = "LC"
 			s tSC = ##class(Ens.Deployment.Deploy).DeployCode(pFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
 			$$$ThrowOnError(tSC)
 		} else {
