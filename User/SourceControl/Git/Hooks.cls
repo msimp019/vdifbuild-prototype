@@ -62,6 +62,12 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 	Quit ec
 }
 
+Classmethod test()
+{
+	s x=..%New("")
+	do x.OnSourceMenuItem("Create Bugfix Branch",.a,.b)
+}
+
 Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef DisplayName As %String) As %Status
 {
 	//RC: Adding separator
@@ -93,8 +99,9 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 1
 		} elseif (name = "Create Release Branch")&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
 			s Enabled = 1
-		} elseif (name = "Create Bugfix Branch")&&($E($ZCVT(tCurrentBranch,"U"),1,8)="RELEASE/") {
+		} elseif (name = "Create Release Branch")&&($E($ZCVT(tCurrentBranch,"U"),1,8)="RELEASE/") {
 			s Enabled = 1
+			s DisplayName = "adam"
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsReleaseMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) {
