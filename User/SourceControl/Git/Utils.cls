@@ -205,7 +205,7 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
-	
+	m ^XABS=pSettings
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	
@@ -422,6 +422,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		//s tSC = e.AsStatus()
 		s pOutput(1)="Command could not be completed due to error: "_e.DisplayString()
 	}
+	m ^XABSS=pOutput
 	Quit tSC
 }
 
