@@ -99,7 +99,7 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 1
 		} elseif (name = "Create Release Branch")&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
 			s Enabled = 1
-		} elseif (name = "Create Release Branch")&&($E($ZCVT(tCurrentBranch,"U"),1,8)="RELEASE/") {
+		} elseif (name = "Create Bugfix Branch")&&(($E($ZCVT(tCurrentBranch,"U"),1,8)="RELEASE/")||1) {
 			s Enabled = 1
 			s DisplayName = "adam"
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
