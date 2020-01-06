@@ -27,6 +27,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <select id="Switch to Branch" hidden="true" name="Switch to Branch" showEmpty="false" width="100" label="Switch to Branch:" required="false"/>
 <text id="Create Feature Branch" hidden="true" name="Create Feature Branch" label="Branch name: feature/" required="false" size="100"/>
 <text id="Create Release Branch" hidden="true" name="Create Release Branch" label="Release name: release/" required="false" size="100"/>
+<text id="Create Bugfix Branch" hidden="true" name="Create Bugfix Branch" label="Branch name: bugfix/" required="false" size="100"/>
 <select id="Merge From Branch" hidden="true" name="Merge From Branch" showEmpty="false" width="100" label="Merge From Branch:" required="false"/>
 <password id="Clone Repository" hidden="true" name="Clone Repository" label="Repository user account password:" required="false" size="100"/>
 <html id="Merge to Team and Delete" hidden="true"/>
@@ -69,9 +70,10 @@ ClassMethod SubmitForm(pSubmit As %ZEN.Submit) As %Status
 	#dim tSettings As %String
 	
 	Set tUserAction = pSubmit.%GetValue("UserAction")
-	
+	s ^XABS=tUserAction
 	if $D(pSubmit.%Data(tUserAction))>0 {
 		Set tSettings(tUserAction)=pSubmit.%GetValue(tUserAction)
+		set ^XABS(tUserAction)=tSettings(tUserAction)
 	} else {
 		Set tSettings(tUserAction)=""
 	}
@@ -104,11 +106,11 @@ Method %OnAfterCreatePage() As %Status
 			Set ..%GetComponentById("DialogueForm").hidden=0
 			Set ..%GetComponentById(tUserAction).hidden=0
 			
-			if tUserAction="Switch to Branch" {
-				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList()
+			if tUserAction="Switch to Branch" || "Create Bugfix Branch" {
+				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList(1)
 			} elseif tUserAction="Merge to Team and Delete" {
 				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Merge from: "_##class(User.SourceControl.Git.Utils).CurrentBranch()_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once merge is completed, "_##class(User.SourceControl.Git.Utils).CurrentBranch()_" will be deleted.<br><br>"
-			}
+			} 
 
 			
 		}

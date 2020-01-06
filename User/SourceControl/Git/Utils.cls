@@ -27,7 +27,7 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Create Bugfix Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
 Parameter GitReleaseMenuItems = ",Commit,Push,Pull,";
@@ -135,9 +135,9 @@ ClassMethod CurrentBranch() As %String
 	Quit tCurrentBranch
 }
 
-ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote As %Boolean = 1) As %String
+ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 1, pIncludeRemote As %Boolean = 1) As %String
 {
-	//Always include develop and team brances
+	//Always include develop and team branches
 	s tTeamBranch = ..TeamBranch()
 	s tBranchList=",develop,"_tTeamBranch
 	
@@ -170,6 +170,9 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 #;				if tInitialCommit [ tTeamBranch {
 					s tBranchList=tBranchList_","_tBranch
 #;				}
+			}
+			if (pIncludeReleaseBranches && ($E(tBranch,1,8)="release/")) {
+				s tBranchList=tBranchList_","_tBranch
 			}
 		}
 	}
@@ -276,6 +279,42 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Create Release Branch" {
+			//switch to release base branch and pull it, in prep for diff with feature branch
+			//The release base branch is the int branch for the first target environment for deployment
+			s tSwitchCommand = tCommand_" checkout "_..ReleaseBranchBase()
+			s tSC = ..RunCmd(tSwitchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			//Pull just to ensure the release branch base is up to date locally before creating release branch
+			s tPullCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			//should add syntax checking for branch names
+			s tBranchName = pSettings(tCommandName)
+			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
+			
+			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
+			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+		} elseif tCommandName = "Create Bugfix Branch" {
+			//switch to release base branch and pull it, in prep for diff with feature branch
+			//The release base branch is the int branch for the first target environment for deployment
+			s tSwitchCommand = tCommand_" checkout "_..ReleaseBranchBase()
+			s tSC = ..RunCmd(tSwitchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			//Pull just to ensure the release branch base is up to date locally before creating release branch
+			s tPullCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			//should add syntax checking for branch names
+			s tBranchName = pSettings(tCommandName)
+			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
+			
+			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
+			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+		} elseif tCommandName = "Create Bugfix Branch" {
 			//switch to release base branch and pull it, in prep for diff with feature branch
 			//The release base branch is the int branch for the first target environment for deployment
 			s tSwitchCommand = tCommand_" checkout "_..ReleaseBranchBase()
@@ -1409,7 +1448,7 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 }
 
-ClassMethod  ConfigScriptsFromImportRequest(pFilename As %String) as %DynamicArray
+ClassMethod ConfigScriptsFromImportRequest(pFilename As %String) As %DynamicArray
 {
 		//Identify the Configuration Script and set it to the ImportRequest
 		s tSC = ##class(Ens.Deployment.Deploy).GeneratePackageXMLVDOC(pFilename,.tDeploymentVDOC)
@@ -1495,3 +1534,4 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 }
 
 }
+
