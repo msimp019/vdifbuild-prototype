@@ -1428,15 +1428,13 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 
 ClassMethod ConfigScriptsFromImportRequest(pFilename As %String) As %DynamicArray
 {
-		zw pFilename
 		//Identify the Configuration Script and set it to the ImportRequest
-		w 22
 		s tSC = ##class(Ens.Deployment.Deploy).GeneratePackageXMLVDOC(pFilename,.tDeploymentVDOC)
 		$$$ThrowOnError(tSC)
-		w 33
+		
 		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(pFilename,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
 		$$$ThrowOnError(tSC)
-		w 44
+		
 		s ConfigScripts=[]
 		s tItemName = ""
 		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
@@ -1464,29 +1462,27 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tResponse=tResponse_"Beginning deployment to "_pTargetHost_":"_pTargetPort_$C(10)
 		s tResponse=tResponse_"-------------------------------"_$C(10)
 		
-		w 1
 		set ConfigScripts=..ConfigScriptsFromImportRequest(pFilename)
 		set tImportRequest.ConfigScriptsJSON=ConfigScripts.%ToJSON()
- 		w 2
+ 		
 		//Create the Import Request and add one ImportObject to it.  The import object will be the deploy file.
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
-		w 3
+		
 		
 		s tImportObject = ##class(User.SourceControl.Deploy.ImportObject).%New()
 		s tSC = tImportObject.ObjectStream.CopyFrom(tDeployStream) $$$ThrowOnError(tSC)
-		zw 66
 		s tImportObject.Name = ##class(%File).GetFilename(pFilename)
 		s tSC = tImportRequest.Objects.Insert(tImportObject) $$$ThrowOnError(tSC)
-		w 4
+		
 		Set tServiceClient=##class(User.SourceControl.Deploy.ServiceClient).%New()
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
 		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
 		Set tServiceClient.Timeout = 300
 		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
-		w 5
-		w "Following Code not Compiled by Jenkins"
+		
+		w "Reminder: Following code not compiled by Jenkins"
 		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
 		
 	} catch e {
