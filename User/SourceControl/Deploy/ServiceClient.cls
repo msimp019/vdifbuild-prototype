@@ -38,4 +38,3 @@ Method Test() As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = documen
 Parameter SrcVer = 2;
 
 }
-

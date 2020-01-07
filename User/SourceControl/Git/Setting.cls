@@ -208,4 +208,3 @@ ClassMethod HandleGitCommand(pUser, pCommand) As %String [ ZenMethod ]
 Parameter SrcVer = 2;
 
 }
-
