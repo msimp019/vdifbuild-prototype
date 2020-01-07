@@ -12,7 +12,7 @@ set jenkinsEnvironment		[lindex $argv 6]
 
 spawn csession $environment -U $buildNamespace 
 
-expect "$buildNamespace>" { send "set ^VDIF(\"environment\")=\"$jenkinsEnvironment\""} timeout { puts "timed out"; exit 1 }
+expect "$buildNamespace>" { send "set ^VDIF(\"environment\")=\"$jenkinsEnvironment\"\r"} timeout { puts "timed out"; exit 1 }
 
 expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).Deploy(\"$deployFileName\",\"$targetHost\",\"$targetPort\",\"$targetNamespace\")\r" } timeout { puts "timed out"; exit 1 }
 
