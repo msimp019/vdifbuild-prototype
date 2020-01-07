@@ -62,10 +62,12 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 	Quit ec
 }
 
-Classmethod test()
+Classmethod test(n)
 {
 	s x=..%New("")
-	do x.OnSourceMenuItem("Create Bugfix Branch",.a,.b)
+	do x.OnSourceMenuItem(^XABS(n),.a,.b)
+	w a
+	return a
 }
 
 Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef DisplayName As %String) As %Status
@@ -105,6 +107,8 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsReleaseMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) {
+			s Enabled = 1
+		} elseif (##class(User.SourceControl.Git.Utils).IsBugfixMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsTeamMenuGitCommand(name))&&(tCurrentBranch=##class(User.SourceControl.Git.Utils).TeamBranch()) {
 			s Enabled = 1
