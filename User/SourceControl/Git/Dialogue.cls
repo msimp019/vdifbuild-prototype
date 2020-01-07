@@ -70,10 +70,9 @@ ClassMethod SubmitForm(pSubmit As %ZEN.Submit) As %Status
 	#dim tSettings As %String
 	
 	Set tUserAction = pSubmit.%GetValue("UserAction")
-	s ^XABS=tUserAction
+	
 	if $D(pSubmit.%Data(tUserAction))>0 {
 		Set tSettings(tUserAction)=pSubmit.%GetValue(tUserAction)
-		set ^XABS(tUserAction)=tSettings(tUserAction)
 	} else {
 		Set tSettings(tUserAction)=""
 	}
@@ -106,11 +105,11 @@ Method %OnAfterCreatePage() As %Status
 			Set ..%GetComponentById("DialogueForm").hidden=0
 			Set ..%GetComponentById(tUserAction).hidden=0
 			
-			if tUserAction="Switch to Branch" || "Create Bugfix Branch" {
+			if tUserAction="Switch to Branch" {
 				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList(1)
 			} elseif tUserAction="Merge to Team and Delete" {
 				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Merge from: "_##class(User.SourceControl.Git.Utils).CurrentBranch()_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once merge is completed, "_##class(User.SourceControl.Git.Utils).CurrentBranch()_" will be deleted.<br><br>"
-			} 
+			}
 
 			
 		}
