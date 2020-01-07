@@ -1486,7 +1486,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 		w 5
-
+		w "Following Code not Compiled by Jenkins"
 		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
 		
 	} catch e {
@@ -1516,3 +1516,4 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 }
 
 }
+
