@@ -176,6 +176,9 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 			if (pIncludeReleaseBranches && ($E(tBranch,1,8)="release/")) {
 				s tBranchList=tBranchList_","_tBranch
 			}
+			if ($E(tBranch,1,7)="bugfix/") {
+				s tBranchList=tBranchList_","_tBranch
+			}
 		}
 	}
 	if $$$ISERR(tSC) Quit "error"
