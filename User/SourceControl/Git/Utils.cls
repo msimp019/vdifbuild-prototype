@@ -207,7 +207,7 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
-	
+	m ^XABS=pSettings
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	
@@ -299,22 +299,12 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Create Bugfix Branch" {
-			//switch to release base branch and pull it, in prep for diff with feature branch
-			//The release base branch is the int branch for the first target environment for deployment
-			s tSwitchCommand = tCommand_" checkout "_..ReleaseBranchBase()
-			s tSC = ..RunCmd(tSwitchCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			//Pull just to ensure the release branch base is up to date locally before creating release branch
-			s tPullCommand = tCommand_" pull --rebase"
-			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
-			
+			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
 			s tBranchName = pSettings(tCommandName)
-			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
-			
+			if '$FIND(tBranchName,"bugfix/") s tBranchName = "bugfix/"_tBranchName
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
-			
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Create Bugfix Branch" {
 			//switch to release base branch and pull it, in prep for diff with feature branch
@@ -424,6 +414,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		//s tSC = e.AsStatus()
 		s pOutput(1)="Command could not be completed due to error: "_e.DisplayString()
 	}
+	m ^XABSS=pOutput
 	Quit tSC
 }
 
