@@ -32,6 +32,8 @@ Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Crea
 /// Menu Items that show, but are only enabled when on a Team branch.
 Parameter GitReleaseMenuItems = ",Commit,Push,Pull,";
 
+Parameter GitBugfixMenuItems = ",Commit,Push,Pull,";
+
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
 
@@ -503,6 +505,11 @@ $F(..#GitFeatureMenuItems, ","_menuItemName_",") > 0
 ClassMethod IsReleaseMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
 {
 $F(..#GitReleaseMenuItems, ","_menuItemName_",") > 0
+}
+
+ClassMethod IsBugfixMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
+{
+$F(..#GitBugfixMenuItems, ","_menuItemName_",") > 0
 }
 
 ClassMethod IsTeamMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
