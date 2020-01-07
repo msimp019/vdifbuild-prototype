@@ -62,14 +62,6 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 	Quit ec
 }
 
-Classmethod test(n)
-{
-	s x=..%New("")
-	do x.OnSourceMenuItem(^XABS(n),.a,.b)
-	w a
-	return a
-}
-
 Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef DisplayName As %String) As %Status
 {
 	//RC: Adding separator
