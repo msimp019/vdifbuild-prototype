@@ -5,6 +5,7 @@ def HS_BuildNamespace = 'VABUILD'
 def Git_SourceBranch = env.Git_SourceBranch
 def Git_IntBranch = env.Git_IntBranch
 def Git_RepoURL = env.Git_RepoURL
+def Jenkins_Environment = env.Jenkins_Environment
 date = new Date()
 def dateTimeStamp = date.format("yyyyMMddHHmmss")
 
@@ -44,7 +45,7 @@ pipeline {
 							host=fields[0]
 							port=fields[1]
 							namespace=fields[2]
-							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace", returnStatus: true
+							result = sh script: "./deployRemote.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $host $port $namespace $Jenkins_Environment", returnStatus: true
 							if (result == 1) { throw new Exception("$result") }
 							countCompleted = countCompleted + 1
 						}
