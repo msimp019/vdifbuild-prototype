@@ -137,7 +137,7 @@ ClassMethod CurrentBranch() As %String
 	Quit tCurrentBranch
 }
 
-ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 1, pIncludeRemote As %Boolean = 1) As %String
+ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote As %Boolean = 1) As %String
 {
 	//Always include develop and team branches
 	s tTeamBranch = ..TeamBranch()
