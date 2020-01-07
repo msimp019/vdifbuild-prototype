@@ -121,7 +121,7 @@ ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMeth
 		set iter=ConfigScripts.%GetIterator()
 		while iter.%GetNext(.i,.script)
 		{
-			set command="do "_pMethod_"^"_script
+			set command="do "_pMethod_"^"_script_"()"
 			write !!,"Executing script:"
 			zw command
 			XECUTE command
@@ -187,3 +187,4 @@ Method Test() As %String [ WebMethod ]
 Parameter SrcVer = 2;
 
 }
+
