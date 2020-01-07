@@ -1,6 +1,6 @@
 /// This class gets compiled within every HSCUSTOM namespace of each environment, and should be called within the configuration scripts.
 /// This prevents IP addresses being stored on github.  
-Class User.ConfigScriptUtils
+Class ConfigScripts.Utils
 {
 
 /// environment should be one of the following strings: "develop", "sqa2", "sqa1", "preprod", "production"
@@ -36,4 +36,3 @@ ClassMethod GetEnvironmentName() As %String
 }
 
 }
-
