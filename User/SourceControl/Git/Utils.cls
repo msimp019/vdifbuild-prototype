@@ -1428,13 +1428,15 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 
 ClassMethod ConfigScriptsFromImportRequest(pFilename As %String) As %DynamicArray
 {
+		zw pFilename
 		//Identify the Configuration Script and set it to the ImportRequest
+		w 22
 		s tSC = ##class(Ens.Deployment.Deploy).GeneratePackageXMLVDOC(pFilename,.tDeploymentVDOC)
 		$$$ThrowOnError(tSC)
-		
+		w 33
 		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(pFilename,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
 		$$$ThrowOnError(tSC)
-		
+		w 44
 		s ConfigScripts=[]
 		s tItemName = ""
 		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
@@ -1473,6 +1475,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		
 		s tImportObject = ##class(User.SourceControl.Deploy.ImportObject).%New()
 		s tSC = tImportObject.ObjectStream.CopyFrom(tDeployStream) $$$ThrowOnError(tSC)
+		zw 66
 		s tImportObject.Name = ##class(%File).GetFilename(pFilename)
 		s tSC = tImportRequest.Objects.Insert(tImportObject) $$$ThrowOnError(tSC)
 		w 4
