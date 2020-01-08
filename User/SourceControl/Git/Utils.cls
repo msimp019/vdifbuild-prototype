@@ -27,10 +27,12 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Create Bugfix Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
 Parameter GitReleaseMenuItems = ",Commit,Push,Pull,";
+
+Parameter GitBugfixMenuItems = ",Commit,Push,Pull,";
 
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
@@ -137,7 +139,7 @@ ClassMethod CurrentBranch() As %String
 
 ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote As %Boolean = 1) As %String
 {
-	//Always include develop and team brances
+	//Always include develop and team branches
 	s tTeamBranch = ..TeamBranch()
 	s tBranchList=",develop,"_tTeamBranch
 	
@@ -171,6 +173,12 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 					s tBranchList=tBranchList_","_tBranch
 #;				}
 			}
+			if (pIncludeReleaseBranches && ($E(tBranch,1,8)="release/")) {
+				s tBranchList=tBranchList_","_tBranch
+			}
+			if ($E(tBranch,1,7)="bugfix/") {
+				s tBranchList=tBranchList_","_tBranch
+			}
 		}
 	}
 	if $$$ISERR(tSC) Quit "error"
@@ -202,7 +210,6 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
-	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	
@@ -292,6 +299,14 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			
+			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+		} elseif tCommandName = "Create Bugfix Branch" {
+			//consider adding checkbox to allow push to be optional, but currently it is default behavior
+			//should add syntax checking for branch names
+			s tBranchName = pSettings(tCommandName)
+			if '$FIND(tBranchName,"bugfix/") s tBranchName = "bugfix/"_tBranchName
+			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
+			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Pull from Develop" {
 
@@ -464,6 +479,11 @@ $F(..#GitFeatureMenuItems, ","_menuItemName_",") > 0
 ClassMethod IsReleaseMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
 {
 $F(..#GitReleaseMenuItems, ","_menuItemName_",") > 0
+}
+
+ClassMethod IsBugfixMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
+{
+$F(..#GitBugfixMenuItems, ","_menuItemName_",") > 0
 }
 
 ClassMethod IsTeamMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
@@ -1409,7 +1429,7 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 }
 
-ClassMethod  ConfigScriptsFromImportRequest(pFilename As %String) as %DynamicArray
+ClassMethod ConfigScriptsFromImportRequest(pFilename As %String) As %DynamicArray
 {
 		//Identify the Configuration Script and set it to the ImportRequest
 		s tSC = ##class(Ens.Deployment.Deploy).GeneratePackageXMLVDOC(pFilename,.tDeploymentVDOC)

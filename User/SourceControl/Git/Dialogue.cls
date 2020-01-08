@@ -27,6 +27,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <select id="Switch to Branch" hidden="true" name="Switch to Branch" showEmpty="false" width="100" label="Switch to Branch:" required="false"/>
 <text id="Create Feature Branch" hidden="true" name="Create Feature Branch" label="Branch name: feature/" required="false" size="100"/>
 <text id="Create Release Branch" hidden="true" name="Create Release Branch" label="Release name: release/" required="false" size="100"/>
+<text id="Create Bugfix Branch" hidden="true" name="Create Bugfix Branch" label="Branch name: bugfix/" required="false" size="100"/>
 <select id="Merge From Branch" hidden="true" name="Merge From Branch" showEmpty="false" width="100" label="Merge From Branch:" required="false"/>
 <password id="Clone Repository" hidden="true" name="Clone Repository" label="Repository user account password:" required="false" size="100"/>
 <html id="Merge to Team and Delete" hidden="true"/>
@@ -105,7 +106,7 @@ Method %OnAfterCreatePage() As %Status
 			Set ..%GetComponentById(tUserAction).hidden=0
 			
 			if tUserAction="Switch to Branch" {
-				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList()
+				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList(1)
 			} elseif tUserAction="Merge to Team and Delete" {
 				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Merge from: "_##class(User.SourceControl.Git.Utils).CurrentBranch()_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once merge is completed, "_##class(User.SourceControl.Git.Utils).CurrentBranch()_" will be deleted.<br><br>"
 			}

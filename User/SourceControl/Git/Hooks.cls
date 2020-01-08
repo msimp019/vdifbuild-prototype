@@ -36,6 +36,7 @@ XData Menu
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Create Feature Branch" Save = "001"/>
 <MenuItem Name="Create Release Branch" Save = "001"/>
+<MenuItem Name="Create Bugfix Branch" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Pull from Develop" Save = "001"/>
 <MenuItem Name="Pull from Team" Save = "001"/>
@@ -92,9 +93,13 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 1
 		} elseif (name = "Create Release Branch")&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
 			s Enabled = 1
+		} elseif (name = "Create Bugfix Branch")&&($E($ZCVT(tCurrentBranch,"U"),1,8)="RELEASE/") {
+			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsReleaseMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) {
+			s Enabled = 1
+		} elseif (##class(User.SourceControl.Git.Utils).IsBugfixMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsTeamMenuGitCommand(name))&&(tCurrentBranch=##class(User.SourceControl.Git.Utils).TeamBranch()) {
 			s Enabled = 1
