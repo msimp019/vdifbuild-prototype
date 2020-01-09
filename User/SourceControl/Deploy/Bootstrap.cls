@@ -5,10 +5,10 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 	set request=##class(%Net.HttpRequest).%New()
 	set request.Username=username
 	set request.Password=password
-	
-	set endpoint=atelierBaseEndpoint_"v1/"_namespace_"/doc/"_className
+	w 1
+	set endpoint=atelierBaseEndpoint_"/v1/"_namespace_"/doc/"_className
 	do request.Send("Delete",endpoint)
-	
+	w 2
 	set classArray=..GetUDLasArray(className)
 	set body={}
 	set body.enc= "false"
@@ -16,15 +16,18 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 	do request.EntityBody.Write(body.%ToJSON())
 	do request.SetHeader("Content-Type", "application/json") 
 	do request.Put(endpoint)
-	
+	w 3
 	set body=[(className)]
-	set endpoint=atelierBaseEndpoint_"v1/"_namespace_"/action/compile"
+	set endpoint=atelierBaseEndpoint_"/v1/"_namespace_"/action/compile"
 	do request.EntityBody.Clear()
 	do request.EntityBody.Write(body.%ToJSON())
 	do request.SetHeader("Content-Type", "application/json") 
 	do request.Post(endpoint)
-	
+	w 4
+	w !!,request.HttpResponse.Data.Read,!!
+	w 5
 	set responseData={}.%FromJSON(request.HttpResponse.Data)
+	w 6
 	return responseData.status.errors.%Size()<1
 }
 
