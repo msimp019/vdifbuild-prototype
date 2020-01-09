@@ -24,7 +24,7 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 	do request.SetHeader("Content-Type", "application/json") 
 	do request.Post(endpoint)
 	w 4
-	w !!,request.HttpResponse.Data.Read,!!
+	w !!,request.HttpResponse.Data.Read(),!!
 	w 5
 	set responseData={}.%FromJSON(request.HttpResponse.Data)
 	w 6
