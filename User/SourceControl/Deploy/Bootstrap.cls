@@ -34,7 +34,11 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 ClassMethod GetUDLasArray(className As %String) As %Library.DynamicArray
 {
 	set array=[]
-	do ##class(%Compiler.UDL.TextServices).GetTextAsArray("hscustom",className,.classAsGlobalArray)
+	set currentNamespace=$namespace
+	do ##class(%Compiler.UDL.TextServices).GetTextAsArray(currentNamespace,className,.classAsGlobalArray)
+	zw classname
+	zw currentNamespace
+	zw classAsGlobalArray
 	for i=1:1:classAsGlobalArray(0)
 	{
 		do array.%Push(classAsGlobalArray(i))
