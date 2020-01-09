@@ -8,7 +8,7 @@ ClassMethod CreateProjection(cls As %String, ByRef params) As %Status
 {
 	w $namespace
 	w !!,"Doing some setup1",!!
-	s ^XABS=7777
+	s ^XABS=12345
 	quit $$$OK
 }
 
