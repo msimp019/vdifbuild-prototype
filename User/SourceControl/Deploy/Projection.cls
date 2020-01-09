@@ -19,9 +19,5 @@ ClassMethod RemoveProjection(cls As %String, ByRef params, recompile As %Boolean
 	QUIT $$$OK
 }
 
-ClassMethod test()
-{
-	w 1
-}
 }
 
