@@ -14,7 +14,7 @@ Parameter RESOURCE = "AH_SourceControl";
 /// Page title
 Property PageTitle As %ZEN.Datatype.caption [ InitialExpression = {$$$TextHTML("Source Control")} ];
 
-Parameter NoDialogueActions = ",Status,Pull,Push,Add,Pull from Develop,Pull from Team,Diff with Team,Load Branch,";
+Parameter NoDialogueActions = ",Status,Pull,Push,Add,Pull from Develop,Pull from Team,Diff with Team,Load Branch,Re-create Team Branch,";
 
 /// This XML block defines the contents of this page.
 XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
@@ -27,6 +27,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <select id="Switch to Branch" hidden="true" name="Switch to Branch" showEmpty="false" width="100" label="Switch to Branch:" required="false"/>
 <text id="Create Feature Branch" hidden="true" name="Create Feature Branch" label="Branch name: feature/" required="false" size="100"/>
 <text id="Create Release Branch" hidden="true" name="Create Release Branch" label="Release name: release/" required="false" size="100"/>
+<multiSelectSet id="Create Release Branch Select" hidden="true" name="Create Release Branch Select" label="Select Files for Release:" required="false"/>
 <text id="Create Bugfix Branch" hidden="true" name="Create Bugfix Branch" label="Branch name: bugfix/" required="false" size="100"/>
 <select id="Merge From Branch" hidden="true" name="Merge From Branch" showEmpty="false" width="100" label="Merge From Branch:" required="false"/>
 <password id="Clone Repository" hidden="true" name="Clone Repository" label="Repository user account password:" required="false" size="100"/>
@@ -73,6 +74,9 @@ ClassMethod SubmitForm(pSubmit As %ZEN.Submit) As %Status
 	
 	if $D(pSubmit.%Data(tUserAction))>0 {
 		Set tSettings(tUserAction)=pSubmit.%GetValue(tUserAction)
+		if tUserAction="Create Release Branch" {
+			Set tSettings(tUserAction)=pSubmit.%GetValue(tUserAction)_"^"_pSubmit.%GetValue("Create Release Branch Select")
+		}
 	} else {
 		Set tSettings(tUserAction)=""
 	}
@@ -109,6 +113,11 @@ Method %OnAfterCreatePage() As %Status
 				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList(1)
 			} elseif tUserAction="Merge to Team and Delete" {
 				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Merge from: "_##class(User.SourceControl.Git.Utils).CurrentBranch()_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once merge is completed, "_##class(User.SourceControl.Git.Utils).CurrentBranch()_" will be deleted.<br><br>"
+			} elseif tUserAction="Create Release Branch" {
+				s tSC = ##class(User.SourceControl.Git.Utils).CommitSelectList(.tReleaseSelectDisplayList,.tReleaseSelectValueList) $$$ThrowOnError(tSC)
+				Set ..%GetComponentById("Create Release Branch Select").valueList = tReleaseSelectValueList
+				Set ..%GetComponentById("Create Release Branch Select").displayList = tReleaseSelectDisplayList
+				Set ..%GetComponentById("Create Release Branch Select").hidden=0
 			}
 
 			

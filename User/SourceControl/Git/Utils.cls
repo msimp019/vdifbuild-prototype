@@ -27,7 +27,7 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Create Bugfix Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Create Bugfix Branch,Re-create Team Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
 Parameter GitReleaseMenuItems = ",Commit,Push,Pull,";
@@ -185,6 +185,68 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 	Quit tBranchList
 }
 
+ClassMethod CommitSelectList(ByRef pDisplayList As %String = "", ByRef pValueList As %String = "", pSourceBranch As %String = "develop", pIntegrationBranch As %String = "") As %Status
+{
+	
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	#dim tReturnList = ""
+	
+	Try {
+		
+		Set:pIntegrationBranch="" pIntegrationBranch = ..ReleaseBranchBase()
+		
+		s tCommand = ..GitCmdPrefix()
+		s tCommand = tCommand_" checkout "_pIntegrationBranch
+		s tDisplay = 0
+		s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
+		$$$ThrowOnError(tSC)
+		
+		//Kill tOutput
+		s tCommand = ..GitCmdPrefix()
+		s tCommand = tCommand_" pull --rebase"
+		s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
+		$$$ThrowOnError(tSC)
+
+		//Kill tOutput
+		s tCommand = ..GitCmdPrefix()
+		s tCommand = tCommand_" checkout "_pSourceBranch
+		s tDisplay = 0
+		s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
+		$$$ThrowOnError(tSC)
+		
+		//Kill tOutput
+		s tCommand = ..GitCmdPrefix()
+		s tCommand = tCommand_" pull --rebase"
+		s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
+		$$$ThrowOnError(tSC)
+
+		//Kill tOutput
+		s tCommand = ..GitCmdPrefix()
+		s tCommand = tCommand_" diff --name-only HEAD "_pIntegrationBranch
+		s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
+		$$$ThrowOnError(tSC)
+		
+		
+		Kill tOutput
+		s tCommand = ..GitCmdPrefix()
+		s tCommand = tCommand_" log --oneline --cherry-pick --right-only --no-decorate "_pIntegrationBranch_"..."_pSourceBranch
+		s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
+		$$$ThrowOnError(tSC)
+
+		for i=1:1:tOutput {
+			s tValue = $P(tOutput(i)," ",1)
+			s tDisplay = $P(tOutput(i)," ",2,$LENGTH(tOutput(i)," "))_" ("_tValue_")"
+			s pValueList=pValueList_$S(pValueList="":"",1:",")_tValue
+			s pDisplayList=pDisplayList_$S(pDisplayList="":"",1:",")_tDisplay
+		}
+		
+	} catch e {
+		s tSC = e.AsStatus()
+	}
+	Quit tSC
+}
+
 ClassMethod UpdateSettings(ByRef settings) As %Status
 {
   
@@ -293,12 +355,16 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			//should add syntax checking for branch names
-			s tBranchName = pSettings(tCommandName)
+			s tBranchName = $P(pSettings(tCommandName),"^",1)
 			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
 			
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			
+			s tCommitList = $P(pSettings(tCommandName),"^",2)
+			s tCherryPickCommits = tCommand_" cherry-pick -x "_$TR(tCommitList,","," ")
+			s tSC = ..RunCmd(tCherryPickCommits,.pOutput) $$$ThrowOnError(tSC)
+						
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
 		} elseif tCommandName = "Create Bugfix Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
@@ -383,6 +449,33 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the feature branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
+			
+		} elseif tCommandName = "Re-create Team Branch" {
+			
+			//Checkout the team branch to delete it
+			s tCheckoutTeamBranch = tCommand_" checkout "_..TeamBranch()
+			s tSC = ..RunCmd(tCheckoutTeamBranch,.pOutput) $$$ThrowOnError(tSC)
+
+ 			//Now delete the team branch from remote
+			s tRemoteDeleteCommand = tCommand_" push --delete origin "_..TeamBranch()
+			s tSC = ..RunCmd(tRemoteDeleteCommand,.pOutput) $$$ThrowOnError(tSC)
+
+			//Now checkout the team branch in order to delete the local team branch
+			s tCheckoutDevelopBranch = tCommand_" checkout develop"
+			s tSC = ..RunCmd(tCheckoutDevelopBranch,.pOutput) $$$ThrowOnError(tSC)
+			
+			//Pull develop to ensure have latest before recreating the team branch
+			s tPullCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
+
+			//Now delete the team branch using -D to force the delete
+			s tDeleteTeamBranch = tCommand_" branch -D "_..TeamBranch()
+			s tSC = ..RunCmd(tDeleteTeamBranch,.pOutput) $$$ThrowOnError(tSC)
+			
+			s tCreateBranchCommand = tCommand_" checkout -b "_..TeamBranch()
+			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			s tCommand = tCommand_" push --set-upstream origin "_..TeamBranch()
 			
 		} elseif tCommandName = "Load Branch" {
 			//a git command is expected, so just set it to status
@@ -1522,3 +1615,4 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 }
 
 }
+

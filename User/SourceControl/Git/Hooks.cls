@@ -36,6 +36,7 @@ XData Menu
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Create Feature Branch" Save = "001"/>
 <MenuItem Name="Create Release Branch" Save = "001"/>
+<MenuItem Name="Re-create Team Branch" Save = "001"/>
 <MenuItem Name="Create Bugfix Branch" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Pull from Develop" Save = "001"/>
