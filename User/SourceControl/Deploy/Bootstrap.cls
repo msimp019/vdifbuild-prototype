@@ -17,6 +17,7 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 	do request.SetHeader("Content-Type", "application/json") 
 	set sc=request.Put(endpoint)
 
+	set responseData={}.%FromJSON(request.HttpResponse.Data)
 	if (responseData.status.errors.%Size()>0)
 	{
 		return $$$ERROR($$$GeneralError,responseData.status.errors.%Get(0))
