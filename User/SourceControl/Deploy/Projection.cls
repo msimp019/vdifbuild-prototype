@@ -9,9 +9,11 @@ ClassMethod CreateProjection(cls As %String, ByRef params) As %Status
 	w $namespace
 	w !!,"Doing some setup1",!!
 	s ^XABS="test"
-	do ##class(User.SourceControl.Deploy.Service).ConfigureHSCUSTOM()
+	set tSC= ##class(User.SourceControl.Deploy.Service).ConfigureHSCUSTOM()
+	write "ConfigureHSCUSTOM output of: "_$SYSTEM.Status.GetErrorText(tSC)
+	set tSC=$$$ERROR($$$GeneralError,"testing124")
 	w "we are done"
-	quit $$$OK
+	quit tSC
 }
 
 ClassMethod RemoveProjection(cls As %String, ByRef params, recompile As %Boolean) As %Status
