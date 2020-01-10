@@ -1,6 +1,6 @@
 Class User.SourceControl.Deploy.Bootstrap
 {
-ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http://server:port/api/atelier", className As %String = "User.SourceControl.Deploy.Projection.cls", namespace As %String = "User", username As %String = "_system", password As %String = "SYS")
+ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http://server:port/api/atelier", className As %String = "User.SourceControl.Deploy.Projection.cls", namespace As %String = "User", username As %String = "_system", password As %String = "SYS") As %Status
 {
 	set request=##class(%Net.HttpRequest).%New()
 	set request.Username=username
@@ -15,7 +15,12 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 	set body.content= classArray
 	do request.EntityBody.Write(body.%ToJSON())
 	do request.SetHeader("Content-Type", "application/json") 
-	do request.Put(endpoint)
+	set sc=request.Put(endpoint)
+
+	if (responseData.status.errors.%Size()>0)
+	{
+		return $$$ERROR($$$GeneralError,responseData.status.errors.%Get(0))
+	}
 
 	set body=[(className)]
 	set endpoint=atelierBaseEndpoint_"/v1/"_namespace_"/action/compile"
@@ -25,7 +30,18 @@ ClassMethod CompileUsingAtelierEndpoint(atelierBaseEndpoint As %String = "http:/
 	do request.Post(endpoint)
 
 	set responseData={}.%FromJSON(request.HttpResponse.Data)
-	return responseData.status.errors.%Size()<1
+	
+	set iter=responseData.console.%GetIterator()
+	while iter.%GetNext(,.val)
+	{
+		write val,!
+	}
+	if (responseData.status.errors.%Size()>0)
+	{
+		return $$$ERROR($$$GeneralError,responseData.status.errors.%Get(0))
+	}
+	
+	return $$$OK
 }
 
 ClassMethod GetUDLasArray(className As %String) As %Library.DynamicArray
