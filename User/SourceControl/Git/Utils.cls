@@ -1458,6 +1458,14 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	#dim tDeployStatus As %Boolean = 1
 	
 	Try{
+		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
+	
+		//Compile latest service and run projection on server
+		set atelierBaseEndpoint="http://"_pTargetHost_":"_pTargetPort_"/api/atelier"
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.Service.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.Projection.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
 		
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
@@ -1482,7 +1490,6 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
 		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
 		Set tServiceClient.Timeout = 300
-		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
 
