@@ -1420,6 +1420,7 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		
 		Set tProductionClassIncluded = 0
 		Set tComments = "Deploy Package created programatically."
+		zw tContentsList
 		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,pFilename,tProductionName,tComments,tProductionClassIncluded)
 		$$$ThrowOnError(tSC)
 
