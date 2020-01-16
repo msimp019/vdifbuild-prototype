@@ -217,21 +217,6 @@ Method OnBeforeLoad(InternalName As %String) As %Status
 	#dim tSC As %Status = $$$OK
 	
 	//w !,"onbeforeload: "_InternalName
-	if ##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
-		If ##class(User.SourceControl.Git.Utils).IsCheckedOut(InternalName,.tUserName) {
-			if tUserName '= $USERNAME {
-				//Item is checked out by a different user - warn the user that changes cannot be saved (is there a way to make it read only?)
-				Write !,"This item is checked out by another user.  Currently checked out by: "_tUserName
-				Write !,"Item is opened as Read Only."
-				//This may not be good enough - perhaps we need a popup?
-				
-				if $THIS.StudioVersion="" {
-					Set tSC = $$$ERROR($$$GeneralError,"This item is checked out by another user.  Currently checked out by: "_tUserName)
-				}
-				
-			}
-		}
-	}
 	Quit tSC
 }
 
@@ -243,14 +228,6 @@ Method OnBeforeSave(InternalName As %String, Location As %String = "", Object As
 {
 	//w !,"onbeforesave: "_InternalName
 	#dim tSC As %Status = $$$OK
-	if ##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
-		If ##class(User.SourceControl.Git.Utils).IsCheckedOut(InternalName,.tUserName) {
-			if tUserName '= $USERNAME {
-				//Item is checked out by a different user - Quit with an error to abort the save
-				s tSC = $System.Status.Error($$$GeneralError,"Item is locked by another user: "_tUserName)
-			}
-		}
-	}
 	Quit tSC
 }
 
@@ -259,7 +236,7 @@ Method OnBeforeSave(InternalName As %String, Location As %String = "", Object As
 /// just saved. It can be use to export this documement to an external form for example.
 Method OnAfterSave(InternalName As %String, Object As %RegisteredObject = {$$$NULLOREF}) As %Status
 {
-	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() {
+	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() {
 		If '##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
 			//Always add new files to source control by default
 			s tSC = ##class(User.SourceControl.Git.Utils).AddToSourceControl(InternalName)

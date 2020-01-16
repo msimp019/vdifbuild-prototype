@@ -48,6 +48,12 @@ ClassMethod RepoFolder() As %String [ CodeMode = expression ]
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder"))
 }
 
+/// Returns root temp folder
+ClassMethod IsLoadBranchActive() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive"))
+}
+
 /// Returns stored repository username
 ClassMethod UserName() As %String [ CodeMode = expression ]
 {
@@ -1352,6 +1358,9 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 	
 	Try {
 		
+		//Set this flag at the start so that the Source Control Hooks will skip doing any source control actions during branch load
+		Set @..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive") = 1
+		
 		s tOutput=""
 		
 		if '..IsNamespaceInGit() {
@@ -1388,6 +1397,8 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 	for i=1:1:tOutput {
 		w tOutput(i)
 	}
+	
+	Set @..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive") = ""
 	
 	Quit tSC
 }
