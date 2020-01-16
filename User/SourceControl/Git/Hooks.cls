@@ -42,7 +42,9 @@ XData Menu
 <MenuItem Name="Pull from Develop" Save = "001"/>
 <MenuItem Name="Pull from Team" Save = "001"/>
 <MenuItem Name="Diff with Team" Save = "001"/>
+<MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Merge to Team and Delete" Save = "001"/>
+<MenuItem Name="Merge to Release and Delete" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <!--<MenuItem Name="Resolve Merge Conflicts" Save = "001"/>-->
 <MenuItem Name="Load Branch" Save = "001"/>
@@ -93,8 +95,6 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 		} elseif name = "Resolve Merge Conflicts" {
 			s Enabled = 1
 		} elseif (name = "Create Release Branch")&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
-			s Enabled = 1
-		} elseif (name = "Create Bugfix Branch")&&($E($ZCVT(tCurrentBranch,"U"),1,8)="RELEASE/") {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1
@@ -201,12 +201,11 @@ Method IsReadOnly(InternalName As %String) As %Boolean
 {
 	//w !,"isreadonly: "_InternalName
 	
-	#dim tReadOnly As %Boolean = 0
+	#dim tReadOnly As %Boolean = 1
 	
-	//if ##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
-		s tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
-		if $F($ZCVT(tCurrentBranch,"U"),"FEATURE/")=0 Set tReadOnly = 1
-	//}
+	s tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
+	if $F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0 Set tReadOnly = 0
+	if $F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0 Set tReadOnly = 0
 	
 	Quit tReadOnly
 }
@@ -260,8 +259,6 @@ Method OnBeforeSave(InternalName As %String, Location As %String = "", Object As
 /// just saved. It can be use to export this documement to an external form for example.
 Method OnAfterSave(InternalName As %String, Object As %RegisteredObject = {$$$NULLOREF}) As %Status
 {
-	//w !,"onaftersave:  "_InternalName
-	
 	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() {
 		If '##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
 			//Always add new files to source control by default

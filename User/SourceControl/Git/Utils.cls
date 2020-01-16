@@ -27,12 +27,12 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Create Bugfix Branch,Re-create Team Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Re-create Team Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitReleaseMenuItems = ",Commit,Push,Pull,";
+Parameter GitReleaseMenuItems = ",Commit,Push,Pull,Create Bugfix Branch,";
 
-Parameter GitBugfixMenuItems = ",Commit,Push,Pull,";
+Parameter GitBugfixMenuItems = ",Commit,Push,Pull,Merge to Release and Delete,";
 
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
@@ -370,7 +370,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
 			s tBranchName = pSettings(tCommandName)
-			if '$FIND(tBranchName,"bugfix/") s tBranchName = "bugfix/"_tBranchName
+			if '$FIND(tBranchName,"bugfix/") s tBranchName = $REPLACE(##class(User.SourceControl.Git.Utils).CurrentBranch(),"release/","bugfix/")_"/"_tBranchName
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
@@ -430,6 +430,49 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tMergeTeamCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			s tMergeCommitCommand = tCommand_" commit -m ""merge commit from feature branch: "_tCurrentBranch_""""
+			s tSC = ..RunCmd(tMergeCommitCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			//Push the merged team branch to remote
+			s tTeamPushCommand = tCommand_" push"
+			s tSC = ..RunCmd(tTeamPushCommand,.pOutput) $$$ThrowOnError(tSC)
+
+			//Now checkout the feature branch to delete it
+			s tCheckoutCurrentBranch = tCommand_" checkout "_tCurrentBranch
+			s tSC = ..RunCmd(tCheckoutCurrentBranch,.pOutput) $$$ThrowOnError(tSC)
+
+ 			//Now delete the feature branch from remote
+			s tRemoteDeleteCommand = tCommand_" push --delete origin "_tCurrentBranch
+			s tSC = ..RunCmd(tRemoteDeleteCommand,.pOutput) $$$ThrowOnError(tSC)
+
+			//Now checkout the team branch in order to delete the local feature branch
+			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
+
+			//Now delete the feature branch using -D to force the delete
+			s tCommand = tCommand_" branch -D "_tCurrentBranch
+			
+		} elseif tCommandName = "Merge to Release and Delete" {
+			//First, get the current branch
+			s tCurrentBranch = ..CurrentBranch()
+			
+			//Push the bugfix branch to remote
+			s tPushCommand = tCommand_" push"
+			s tSC = ..RunCmd(tPushCommand,.pOutput) $$$ThrowOnError(tSC)
+
+			//Get release branch name from bugfix branch name
+			s tReleaseBranch = $P($REPLACE(tCurrentBranch,"bugfix/","release/"),"/",1,2)
+			//Then check out the team branch to merge to
+			s tCheckoutTargetBranch = tCommand_" checkout "_tReleaseBranch
+			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
+			
+			//First Pull the team branch
+			s tPullTeamCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tPullTeamCommand,.pOutput) $$$ThrowOnError(tSC)
+
+			//Then do the merge
+			s tMergeTeamCommand = tCommand_" merge --squash "_tCurrentBranch
+			s tSC = ..RunCmd(tMergeTeamCommand,.pOutput) $$$ThrowOnError(tSC)
+			
+			s tMergeCommitCommand = tCommand_" commit -m ""merge commit from bugfix branch: "_tCurrentBranch_""""
 			s tSC = ..RunCmd(tMergeCommitCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			//Push the merged team branch to remote
@@ -601,7 +644,7 @@ ClassMethod UserAction(InternalName As %String, MenuName As %String, ByRef Targe
             s Action = 2
             #dim defNamespace As %String = ..#InstallNamespace
             Set Target="/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Setting.cls"
-        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) {
+        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) || ..IsBugfixMenuGitCommand(menuItemName) {
             s Action = 2
             s Target = "/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Dialogue.cls?UserAction="_menuItemName
         } elseif (menuItemName = "Create Release Branch") {
@@ -1349,7 +1392,7 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 	Quit tSC
 }
 
-ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %Status
+ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) As %Status
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -1358,27 +1401,27 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 	Try {
 
 		Kill tSettings
-		s tSettings("Switch to Branch")=pSourceBranch
+		s tSettings("Switch to Branch")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
 		Kill tSettings
-		s tSettings("Pull")=pSourceBranch
+		s tSettings("Pull")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 
 		//Switch to the integration branch in order to do the diff with the source branch
 		Kill tSettings		
-		s tSettings("Switch to Branch")=pIntegrationBranch
+		s tSettings("Switch to Branch")=pEnvironmentBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
 		//Get the new/changed files in the diff between integration branch and source branch
 		Kill tSettings
-		s tSettings("ListDiff")=pSourceBranch
+		s tSettings("ListDiff")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
@@ -1387,7 +1430,7 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		
 		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
 		Kill tSettings
-		s tSettings("Switch to Branch")=pSourceBranch
+		s tSettings("Switch to Branch")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
@@ -1414,7 +1457,7 @@ ClassMethod BuildDeployment(pFilename, pIntegrationBranch, pSourceBranch) As %St
 		//But concern is whether the tLoadList may become too large?
 		s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
 		
-		s tProjectName = $TR(pIntegrationBranch,"/","")
+		s tProjectName = $TR(pEnvironmentBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
 		
@@ -1606,7 +1649,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	}
 	
 	
-	//test reutrn value
+	//test reutrn value - this returns an error on every other deploy
 #;	w !,$I(^MS("count"))
 #;	if ^MS("count")#2 = 0 s tDeployStatus = 0
 	
