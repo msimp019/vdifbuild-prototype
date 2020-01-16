@@ -49,6 +49,7 @@ ClassMethod GetUDLasArray(className As %String) As %Library.DynamicArray
 {
 	set array=[]
 	set currentNamespace=$namespace
+	zw className
 	do ##class(%Compiler.UDL.TextServices).GetTextAsArray(currentNamespace,className,.classAsGlobalArray)
 	for i=1:1:classAsGlobalArray(0)
 	{
