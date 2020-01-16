@@ -45,7 +45,7 @@ $System.Mirror.IsBackup()
 /// The Environment names are as follows:<br>
 /// <table border="1"><tr><th>Logical Name</th><th>Physical Name</th></tr>
 /// <tr><td>prod</td><td>Prod</td></tr>
-/// <tr><td>preProd</td><td>PreProd</td></tr>
+/// <tr><td>preprod</td><td>PreProd</td></tr>
 /// <tr><td>gold</td><td>SQA1C</td></tr>
 /// <tr><td>silver</td><td>SQA2C</td></tr>
 /// <tr><td>bronze</td><td>DEV</td></tr></table><p>
