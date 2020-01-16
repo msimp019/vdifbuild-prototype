@@ -1501,7 +1501,7 @@ ClassMethod DeployRollback(pFilename As %String, pTargetHost As %String, pTarget
 		Set tCredentials = ##class(Ens.Config.Credentials).%OpenId("HS_Credentials")  //Build installer sets this on initial setup
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
-		Set tResponse = tServiceClient.Rollback(tImportRequest,.tDeployStatus)
+		Set tResponse = tServiceClient.Run(Rollback,tImportRequest,.tDeployStatus)
 
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
@@ -1587,7 +1587,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
 
-		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
+		Set tResponse = tServiceClient.Run(Deploy,tImportRequest,.tDeployStatus)
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
