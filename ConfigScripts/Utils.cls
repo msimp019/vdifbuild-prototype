@@ -54,7 +54,7 @@ ClassMethod GetEnvironment() As %String
 {
 	s tNS = $Namespace
 	ZN "HSCUSTOM"
-	s tEnvironment = $G(^User.SourceControlEnvironment)
+	s tEnvironment = $G(^SourceControlEnvironment)
 	ZN tNS
 	Quit tEnvironment
 }

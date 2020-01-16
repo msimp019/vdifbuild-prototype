@@ -1587,7 +1587,7 @@ ClassMethod ConfigScriptsFromImportRequest(pFilename As %String) As %DynamicArra
 		return ConfigScripts
 }
 
-ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As %String, pTargetNamespace As %String) As %Status
+ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As %String, pTargetNamespace As %String, pHSEnvironment As %String = "") As %Status
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -1629,7 +1629,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
 
 
-		Set tResponse = tServiceClient.Deploy(tImportRequest,.tDeployStatus)
+		Set tResponse = tServiceClient.Deploy(pHSEnvironment,tImportRequest,.tDeployStatus)
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
