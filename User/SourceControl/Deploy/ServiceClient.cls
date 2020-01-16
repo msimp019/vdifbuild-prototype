@@ -21,17 +21,17 @@ Parameter SOAPVERSION = 1.1;
 
 Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
 {
- Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Deploy","Deploy",.pRequest,.pDeployStatus)
+ Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Run","Deploy",.pRequest,.pDeployStatus)
 }
 
 Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
 {
- Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Rollback","Rollback",.pRequest,.pDeployStatus)
+ Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Run","Rollback",.pRequest,.pDeployStatus)
 }
 
 Method Test() As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
 {
- Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Test","Test")
+ Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Run","Test")
 }
 
 /// Revision number of this class
