@@ -238,6 +238,16 @@ Method Test() As %String [ WebMethod ]
 	Quit "Test"
 }
 
+Method Deploy(x,y) As %String [ WebMethod ]
+{
+	Quit "1"
+}
+
+Method Rollback(x,y) As %String [ WebMethod ]
+{
+	Quit "1"
+}
+
 /// Revision number of this class
 Parameter SrcVer = 2;
 
