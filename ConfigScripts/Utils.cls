@@ -44,11 +44,11 @@ $System.Mirror.IsBackup()
 /// For example, a service registry entry may have the same name in all environments, but pointed to a different host name in SQA1C vs. Prod<p>
 /// The Environment names are as follows:<br>
 /// <table border="1"><tr><th>Logical Name</th><th>Physical Name</th></tr>
-/// <tr><td>Prod</td><td>Prod</td></tr>
-/// <tr><td>PreProd</td><td>PreProd</td></tr>
-/// <tr><td>Gold</td><td>SQA1C</td></tr>
-/// <tr><td>Silver</td><td>SQA2C</td></tr>
-/// <tr><td>Bronze</td><td>DEV</td></tr></table><p>
+/// <tr><td>prod</td><td>Prod</td></tr>
+/// <tr><td>preProd</td><td>PreProd</td></tr>
+/// <tr><td>gold</td><td>SQA1C</td></tr>
+/// <tr><td>silver</td><td>SQA2C</td></tr>
+/// <tr><td>bronze</td><td>DEV</td></tr></table><p>
 /// The value that is returned is the Logical Name of the environment
 ClassMethod GetEnvironment() As %String
 {
