@@ -26,12 +26,12 @@ Method Deploy(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeplo
 
 Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean) As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
 {
- Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Run","Rollback",.pRequest,.pDeployStatus)
+ Quit ..WebMethod("Rollback").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Rollback","Rollback",.pRequest,.pDeployStatus)
 }
 
 Method Test() As %String [ Final, ProcedureBlock = 1, SoapBindingStyle = document, SoapBodyUse = literal, WebMethod ]
 {
- Quit ..WebMethod("Run").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Run","Test")
+ Quit ..WebMethod("Test").Invoke($this,"http://ZRC.org/User.SourceControl.Deploy.Service.Test","Test")
 }
 
 /// Revision number of this class
