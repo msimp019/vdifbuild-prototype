@@ -67,7 +67,7 @@ Method Run(method As %String, pRequest As User.SourceControl.Deploy.ImportReques
 	Quit tReturn
 }
 
-ClassMethod Deploy1(pRequest As User.SourceControl.Deploy.ImportRequest) As %Status
+ClassMethod Deploy(pRequest As User.SourceControl.Deploy.ImportRequest) As %Status
 {
 	set ^Jenkins("LatestDeploy")="0 - Started"
 	set tImportObject=pRequest.Objects.GetAt(i)
@@ -146,7 +146,7 @@ ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMeth
 	return $$$OK
 }
 
-Method Rollback1(pRequest As User.SourceControl.Deploy.ImportRequest) As %String
+Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest) As %String
 {	
 	set tSC=$$$OK
 	try
@@ -236,16 +236,6 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 Method Test() As %String [ WebMethod ]
 {
 	Quit "Test"
-}
-
-Method Deploy(x,y) As %String [ WebMethod ]
-{
-	Quit "1"
-}
-
-Method Rollback(x,y) As %String [ WebMethod ]
-{
-	Quit "1"
 }
 
 /// Revision number of this class
