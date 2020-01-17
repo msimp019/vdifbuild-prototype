@@ -139,14 +139,25 @@ ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMeth
 	set iter=ConfigScripts.%GetIterator()
 	while iter.%GetNext(.i,.script)
 	{
+		continue:(pMethod="Revert")||('..RevertNeeded(script))
+		
 		set command="set tSC= "_pMethod_"^"_script_"()"
 		write !!,"Executing script:"
 		zw command
 		XECUTE command
-		set ^Jenkins("Script",pMethod,$h,script)=tSC
+		set ^Jenkins("Script",script,$h,pMethod)=tSC
 		return:'tSC tSC
 	}
 	return $$$OK
+}
+
+ClassMethod RevertNeeded(script) as %Status
+{
+	set horo=$o(^Jenkins("Script",script,""),-1)
+	return:horo="" 0
+	set method=$o(^Jenkins("Script",script,horo,""))
+	return:method'="Deploy" 0
+	return ^Jenkins("Script",script,horo,"Deploy")
 }
 
 Method Rollback(pRequest As User.SourceControl.Deploy.ImportRequest) As %String
