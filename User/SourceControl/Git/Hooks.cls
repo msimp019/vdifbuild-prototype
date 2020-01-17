@@ -94,7 +94,7 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 0
 		} elseif name = "Resolve Merge Conflicts" {
 			s Enabled = 1
-		} elseif (name = "Create Release Branch")&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
+		} elseif (##class(User.SourceControl.Git.Utils).IsDevelopMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1

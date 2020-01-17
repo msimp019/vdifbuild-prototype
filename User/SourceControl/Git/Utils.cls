@@ -23,6 +23,9 @@ Parameter IsSYNC = 0;
 /// Git menu commands
 Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Branch,";
 
+/// Git menu commands
+Parameter GitDevelopMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Branch,Re-create Team Branch,Create Release Branch,";
+
 /// Menu Items that show, but are only enabled when on a Feature branch.
 Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
 
@@ -611,6 +614,11 @@ ClassMethod RunCmd(cmd As %String, ByRef output As %String, display As %Boolean 
 ClassMethod IsMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
 {
 $F(..#GitMenuItems, ","_menuItemName_",") > 0
+}
+
+ClassMethod IsDevelopMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
+{
+$F(..#GitDevelopMenuItems, ","_menuItemName_",") > 0
 }
 
 ClassMethod IsFeatureMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
