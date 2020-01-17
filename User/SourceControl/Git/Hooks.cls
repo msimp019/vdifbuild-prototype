@@ -94,7 +94,7 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 0
 		} elseif name = "Resolve Merge Conflicts" {
 			s Enabled = 1
-		} elseif (name = "Create Release Branch")&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
+		} elseif (##class(User.SourceControl.Git.Utils).IsDevelopMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1
@@ -206,7 +206,7 @@ Method IsReadOnly(InternalName As %String) As %Boolean
 	s tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
 	if $F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0 Set tReadOnly = 0
 	if $F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0 Set tReadOnly = 0
-	
+	if (InternalName[^Git("IgnorePackage")) set tReadOnly = 0
 	Quit tReadOnly
 }
 
@@ -236,7 +236,8 @@ Method OnBeforeSave(InternalName As %String, Location As %String = "", Object As
 /// just saved. It can be use to export this documement to an external form for example.
 Method OnAfterSave(InternalName As %String, Object As %RegisteredObject = {$$$NULLOREF}) As %Status
 {
-	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() {
+	return $$$OK
+	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() && '(InternalName[^Git("IgnorePackage")){
 		If '##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
 			//Always add new files to source control by default
 			s tSC = ##class(User.SourceControl.Git.Utils).AddToSourceControl(InternalName)
