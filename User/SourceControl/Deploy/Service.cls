@@ -70,7 +70,7 @@ Method Run(method As %String, pRequest As User.SourceControl.Deploy.ImportReques
 ClassMethod Deploy(pRequest As User.SourceControl.Deploy.ImportRequest) As %Status
 {
 	set ^Jenkins("LatestDeploy")="0 - Started"
-	set tImportObject=pRequest.Objects.GetAt(i)
+	set tImportObject=pRequest.Objects.GetAt(1)
  	if tImportObject.Name [ "DeployPackage" 
 	{
 		set tSC=..ImportObject(tImportObject)
