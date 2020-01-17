@@ -46,13 +46,6 @@ Method Run(method As %String, pRequest As User.SourceControl.Deploy.ImportReques
 		}
 		
 		d tFile.Clear()
-		
-		//Not currently doing any loads that populate err
-#;		s tErrorText=""
-#;		For { s tErrorText=$O(err(tErrorText)) Q:tErrorText=""
-#;			s tReturn=tReturn_err(tErrorText)_$C(10)
-#;			s pDeployStatus = 0
-#;		}	
 
 		if $$$ISERR(tSC) {
 			s tReturn = tReturn_$System.Status.GetErrorText(tSC)_$C(10)
@@ -80,12 +73,6 @@ ClassMethod Deploy(pRequest As User.SourceControl.Deploy.ImportRequest) As %Stat
 		return:'tSC tSC 
 	}	
 	set ^Jenkins("LatestDeploy")="1 - Compiled"
- //			elseif $P(tImportObject.Name,"/",5) = "businessitems" {
- //				//If the imported item is a deployment package for a business item, do the import to the appropriate namespace after importing all the classes
- //				s tBusinessItems($INCREMENT(tBusinessItems))=tImportObject.Name
- //			}
- // 	set sc=..ImportBusinessObjects(tBusinessItems)
-
 	
 	set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
 	set tSC=..RunConfigRoutinesByMethodName(ConfigScripts,"Deploy")
@@ -108,29 +95,6 @@ ClassMethod ImportObject(tImportObject)
 	return tSC
 }
 
-/// This class is just holding code. no guarantee it would work
-ClassMethod ImportBusinessObjects(tBusinessItems)
-{
- //		For i=1:1:tBusinessItems {
- //			s tDeployItemName = tBusinessItems(i)
- //			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
- //		//check to ensure the target namespace exists on this instance
- //		if ($D(^%SYS("Ensemble","InstalledNamespace",tTargetNamespace))=1) && ($System.Mirror.IsPrimary() || '$System.Mirror.IsMember()) {
- //			s tNS = $NAMESPACE
- //			ZN tTargetNamespace
- //			
- //			s tFilename = $System.Util.InstallDirectory()_$E(tDeployItemName,2,*)
- //			if ##class(%File).Exists(tFilename) {
- //				s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
- //				s tRollbackFilename = $System.Util.InstallDirectory()_"/mgr/Temp/"_##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")_"_"_$P(tDeployItemName,"/",7)
- //				s tSCDeploy = ##class(Ens.Deployment.Deploy).DeployCode(tFilename,tProduction,1,tRollbackFilename,"C")
- //				if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSCDeploy)
- //			} else {
- //				s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
- //			}
- //			ZN tNS
- //		}
-}
 
 ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMethod As %String) as %Status
 {
@@ -252,8 +216,32 @@ Method Test() As %String [ WebMethod ]
 	Quit "Test"
 }
 
-/// Revision number of this class
-Parameter SrcVer = 2;
+ // The following was deleted from Deploy. Maybe for future use?
+ //			elseif $P(tImportObject.Name,"/",5) = "businessitems" {
+ //				//If the imported item is a deployment package for a business item, do the import to the appropriate namespace after importing all the classes
+ //				s tBusinessItems($INCREMENT(tBusinessItems))=tImportObject.Name
+ //			}
+ // 	set sc=..ImportBusinessObjects(tBusinessItems)
+
+ //		For i=1:1:tBusinessItems {
+ //			s tDeployItemName = tBusinessItems(i)
+ //			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
+ //		//check to ensure the target namespace exists on this instance
+ //		if ($D(^%SYS("Ensemble","InstalledNamespace",tTargetNamespace))=1) && ($System.Mirror.IsPrimary() || '$System.Mirror.IsMember()) {
+ //			s tNS = $NAMESPACE
+ //			ZN tTargetNamespace
+ //			
+ //			s tFilename = $System.Util.InstallDirectory()_$E(tDeployItemName,2,*)
+ //			if ##class(%File).Exists(tFilename) {
+ //				s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
+ //				s tRollbackFilename = $System.Util.InstallDirectory()_"/mgr/Temp/"_##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")_"_"_$P(tDeployItemName,"/",7)
+ //				s tSCDeploy = ##class(Ens.Deployment.Deploy).DeployCode(tFilename,tProduction,1,tRollbackFilename,"C")
+ //				if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSCDeploy)
+ //			} else {
+ //				s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
+ //			}
+ //			ZN tNS
+ //		}
 
 }
 
