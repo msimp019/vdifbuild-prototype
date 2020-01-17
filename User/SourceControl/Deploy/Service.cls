@@ -15,7 +15,7 @@ Parameter USECLASSNAMESPACES = 1;
 /// Use xsi:type attribute for literal types.
 Parameter OUTPUTTYPEATTRIBUTE = 1;
 
-Method Run(method As %String, pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean, ByRef pCompletedSteps As %DynamicObject) As %String [ WebMethod ]
+Method Run(method As %String, pRequest As User.SourceControl.Deploy.ImportRequest, Output pDeployStatus As %Boolean, pHSEnvironment As %String = "") As %String [ WebMethod ]
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -24,6 +24,9 @@ Method Run(method As %String, pRequest As User.SourceControl.Deploy.ImportReques
 	s pDeployStatus = 1
 	
 	try {
+		
+		s ^SourceControlEnvironment = pHSEnvironment
+		
 		Set outputfile=##class(%File).TempFilename("compile")
 		
 		OPEN outputfile:"WSN"
