@@ -764,17 +764,6 @@ ClassMethod AddToSourceControl(InternalName As %String) As %Status
     Quit tSC
 }
 
-ClassMethod IsCheckedOut(InternalName As %String, ByRef pUserName As %String = "") As %String
-{
-	#dim isCheckedOut As %Boolean = 0
-	
-	Set isCheckedOut = $D(@..InstallNamespaceStorage()@("locks",InternalName)) > 0
-	
-	if isCheckedOut Set pUserName = @..InstallNamespaceStorage()@("locks",InternalName)
-	
-	Quit isCheckedOut
-}
-
 ClassMethod CheckOut(InternalName As %String) As %Status
 {
     #dim i, item, sc
@@ -811,27 +800,6 @@ ClassMethod CheckInItem(InternalName As %String) As %Status
 {
     Kill @..InstallNamespaceStorage()@("locks", InternalName)
     Quit $$$OK
-}
-
-ClassMethod IsStaged(InternalName As %String) As %String
-{
-	#dim tSC As %Status = $$$OK
-	#dim tReturn As %Boolean = 0
-	s tExternalName = ..ExternalName(InternalName)
-	if "/\" [ $E(tExternalName,1,1) s tExternalName = $E(tExternalName,2,*)
-	s tCommand = ..GitCmdPrefix()
-	s tCommand = tCommand_" status --short"
-	s tDisplay = 0
-	s tSC = ..RunCmd(tCommand,.tOutput,tDisplay)
-	if $$$ISERR(tSC) Quit
-	For i=1:1:tOutput {
-		s tOutputLine = tOutput(i)
-		s tStagedItem = $E(tOutputLine,4,*)
-		if tStagedItem = tExternalName {
-			s tReturn = 1
-		}		
-	}
-	Quit tReturn
 }
 
 ClassMethod DeleteExternalsForItem(InternalName As %String, FullExternalName As %String) As %Status
