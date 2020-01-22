@@ -45,8 +45,9 @@ XData Menu
 <MenuItem Name="Pull from Team" Save = "001"/>
 <MenuItem Name="Diff with Team" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
-<MenuItem Name="Merge to Team and Delete" Save = "001"/>
-<MenuItem Name="Merge to Release and Delete" Save = "001"/>
+<MenuItem Name="Request Merge to Team Branch" Save = "001"/>
+<MenuItem Name="Request Merge to Develop Branch" Save = "001"/>
+<MenuItem Name="Request Merge to Release Branch" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <!--<MenuItem Name="Resolve Merge Conflicts" Save = "001"/>-->
 <MenuItem Name="Load Branch" Save = "001"/>

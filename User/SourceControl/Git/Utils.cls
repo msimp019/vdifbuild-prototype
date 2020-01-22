@@ -27,15 +27,15 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitDevelopMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Branch,Re-create Team Branch,Create Release Branch,";
 
 /// Menu Items that show, but are only enabled when on a Feature branch.
-Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Merge to Team and Delete,";
+Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Request Merge to Team Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Re-create Team Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Re-create Team Branch,Request Merge to Develop Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
 Parameter GitReleaseMenuItems = ",Commit,Push,Pull,Create Bugfix Branch,";
 
-Parameter GitBugfixMenuItems = ",Commit,Push,Pull,Merge to Release and Delete,";
+Parameter GitBugfixMenuItems = ",Commit,Push,Pull,Request Merge to Release Branch,";
 
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
@@ -87,6 +87,12 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase"))
 ClassMethod RepoURL() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%repoURL"))
+}
+
+/// Returns root temp folder
+ClassMethod RepoAPI() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%repoAPI"))
 }
 
 /// Returns root temp folder
@@ -269,6 +275,7 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
     If $System.Security.Check("AH_SourceControlAdmin","USE") {    
 	    // set Repository url - example: bitbucket.org/readycomputinginc/alohr.git
 	    s @..InstallNamespaceStorage()@("%repoURL") = settings("repoURL")
+	    s @..InstallNamespaceStorage()@("%repoAPI") = "api."_$P(settings("repoURL"),"/",1)_"/repos/"_$P(settings("repoURL"),"/",2)_"/"_$P($P(settings("repoURL"),"/",3),".",1)_"/"
 	    s @..InstallNamespaceStorage()@("%repoProtocol") = settings("repoProtocol")
 	    s @..InstallNamespaceStorage()@("%repoName") = $P($P(settings("repoURL"),"/",$L(settings("repoURL"),"/")),".",1)
 	    // set Repository url - example: bitbucket.org/readycomputinginc/alohr.git
@@ -418,88 +425,63 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			//Diff compares the current HEAD (last commit on current branch) to a target branch.  Used to evaluate completeness of release branch.
 			s tCommand = tCommand_" diff --name-only HEAD "_..TeamBranch()
 
-		} elseif tCommandName = "Merge to Team and Delete" {
+		} elseif tCommandName = "Request Merge to Team Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
 			
 			//Push the feature branch to remote
 			s tPushCommand = tCommand_" push"
 			s tSC = ..RunCmd(tPushCommand,.pOutput) $$$ThrowOnError(tSC)
-
-			//Then check out the team branch to merge to
-			s tCheckoutTargetBranch = tCommand_" checkout "_..TeamBranch()
-			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
 			
-			//First Pull the team branch
-			s tPullTeamCommand = tCommand_" pull --rebase"
-			s tSC = ..RunCmd(tPullTeamCommand,.pOutput) $$$ThrowOnError(tSC)
-
-			//Then do the merge
-			s tMergeTeamCommand = tCommand_" merge --squash "_tCurrentBranch
-			s tSC = ..RunCmd(tMergeTeamCommand,.pOutput) $$$ThrowOnError(tSC)
+			//Call the github API to create the pull request
+			s tPullRequestType = "FeatureMerge"
+			s tSC = ..CreatePullRequest(tPullRequestType, .pOutput) $$$ThrowOnError(tSC)			
 			
-			s tMergeCommitCommand = tCommand_" commit -m ""merge commit from feature branch: "_tCurrentBranch_""""
-			s tSC = ..RunCmd(tMergeCommitCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			//Push the merged team branch to remote
-			s tTeamPushCommand = tCommand_" push"
-			s tSC = ..RunCmd(tTeamPushCommand,.pOutput) $$$ThrowOnError(tSC)
-
-			//Now checkout the feature branch to delete it
-			s tCheckoutCurrentBranch = tCommand_" checkout "_tCurrentBranch
-			s tSC = ..RunCmd(tCheckoutCurrentBranch,.pOutput) $$$ThrowOnError(tSC)
-
- 			//Now delete the feature branch from remote
-			s tRemoteDeleteCommand = tCommand_" push --delete origin "_tCurrentBranch
-			s tSC = ..RunCmd(tRemoteDeleteCommand,.pOutput) $$$ThrowOnError(tSC)
-
 			//Now checkout the team branch in order to delete the local feature branch
+			s tCheckoutTargetBranch = tCommand_" checkout "_..TeamBranch()
 			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
 
 			//Now delete the feature branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
 			
-		} elseif tCommandName = "Merge to Release and Delete" {
+		} elseif tCommandName = "Request Merge to Release Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
+			
+			s tReleaseBranch = $P($REPLACE(tCurrentBranch,"bugfix/","release/"),"/",1,2)
 			
 			//Push the bugfix branch to remote
 			s tPushCommand = tCommand_" push"
 			s tSC = ..RunCmd(tPushCommand,.pOutput) $$$ThrowOnError(tSC)
 
-			//Get release branch name from bugfix branch name
-			s tReleaseBranch = $P($REPLACE(tCurrentBranch,"bugfix/","release/"),"/",1,2)
-			//Then check out the team branch to merge to
+			//Call the github API to create the pull request
+			s tPullRequestType = "BugFixMerge"
+			s tSC = ..CreatePullRequest(tPullRequestType, .pOutput) $$$ThrowOnError(tSC)			
+
+			//Now checkout the release branch in order to delete the local bug fix branch
 			s tCheckoutTargetBranch = tCommand_" checkout "_tReleaseBranch
 			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
+
+			//Now delete the bug fix branch using -D to force the delete
+			s tCommand = tCommand_" branch -D "_tCurrentBranch
 			
-			//First Pull the team branch
-			s tPullTeamCommand = tCommand_" pull --rebase"
-			s tSC = ..RunCmd(tPullTeamCommand,.pOutput) $$$ThrowOnError(tSC)
-
-			//Then do the merge
-			s tMergeTeamCommand = tCommand_" merge --squash "_tCurrentBranch
-			s tSC = ..RunCmd(tMergeTeamCommand,.pOutput) $$$ThrowOnError(tSC)
+		} elseif tCommandName = "Request Merge to Develop Branch" {
+			//First, get the current branch
+			s tCurrentBranch = ..CurrentBranch()
 			
-			s tMergeCommitCommand = tCommand_" commit -m ""merge commit from bugfix branch: "_tCurrentBranch_""""
-			s tSC = ..RunCmd(tMergeCommitCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			//Push the merged team branch to remote
-			s tTeamPushCommand = tCommand_" push"
-			s tSC = ..RunCmd(tTeamPushCommand,.pOutput) $$$ThrowOnError(tSC)
+			//Push the team branch to remote
+			s tPushCommand = tCommand_" push"
+			s tSC = ..RunCmd(tPushCommand,.pOutput) $$$ThrowOnError(tSC)
 
-			//Now checkout the feature branch to delete it
-			s tCheckoutCurrentBranch = tCommand_" checkout "_tCurrentBranch
-			s tSC = ..RunCmd(tCheckoutCurrentBranch,.pOutput) $$$ThrowOnError(tSC)
+			//Call the github API to create the pull request
+			s tPullRequestType = "TeamMerge"
+			s tSC = ..CreatePullRequest(tPullRequestType, .pOutput) $$$ThrowOnError(tSC)			
 
- 			//Now delete the feature branch from remote
-			s tRemoteDeleteCommand = tCommand_" push --delete origin "_tCurrentBranch
-			s tSC = ..RunCmd(tRemoteDeleteCommand,.pOutput) $$$ThrowOnError(tSC)
-
-			//Now checkout the team branch in order to delete the local feature branch
+			//Now checkout the develop branch in order to delete the local team branch
+			s tCheckoutTargetBranch = tCommand_" checkout develop"
 			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
 
-			//Now delete the feature branch using -D to force the delete
+			//Now delete the team branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
 			
 		} elseif tCommandName = "Re-create Team Branch" {
@@ -1276,7 +1258,7 @@ ClassMethod TestDialogue(pMenuCommand, pCommandValue = "")
 	}
 }
 
-ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pRepoURL, pRepoProtocol, pPersonName, pPersonEmail) As %Status
+ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pRepoURL, pRepoProtocol, pPersonName, pPersonEmail, pTeamBranch, pReleaseBase)
 {
 	
 	Set tSettings("repoBaseFolder")=pRepoBaseFolder
@@ -1285,6 +1267,8 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pRepoURL, pRepoProtocol, pP
 	Set tSettings("repoProtocol")=pRepoProtocol
 	Set tSettings("personName")=pPersonName
 	Set tSettings("personEmail")=pPersonEmail
+	Set tSettings("teamBranch")=pTeamBranch
+	Set tSettings("releaseBranchBase")=pReleaseBase
 	d ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
 
@@ -1642,6 +1626,123 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	
 
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
+}
+
+/// Pull Request Type may be: FeatureMerge, TeamMerge, BugFixMerge
+/// Depending on the type of merge, the base and head brances will be determined as follows:
+/// FeatureMerge:  base will be the team branch and head will be the current branch
+/// TeamMerge: base will be develop and head will be the team branch
+/// BugFixMerge: base will be the release branch the bugfix belongs to and head will be the current branch
+ClassMethod CreatePullRequest(pPullRequestType As %String, ByRef pOutput As %String) As %Status
+{
+	
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	
+	Try {
+		
+		set pOutput=$G(pOutput)+0 //This is to initialize the variable if it doesn't exist, but not increment it if it does exist
+		s pOutput($I(pOutput))=""
+		s pOutput($I(pOutput))="-------------------------------"
+		s pOutput($I(pOutput))=""
+		
+		Set (tHead, tBase) = ""
+		
+		if pPullRequestType="FeatureMerge" {
+			Set tHead = ..CurrentBranch()
+			Set tBase = ..TeamBranch()
+		} elseif pPullRequestType="TeamMerge" {
+			Set tHead = ..TeamBranch()
+			Set tBase = "develop"
+		} elseif pPullRequestType="BugFixMerge" {
+			Set tHead = ..CurrentBranch()
+			Set tBase = $P($REPLACE(tHead,"bugfix/","release/"),"/",1,2)
+		} else {
+			$$$ThrowOnError($$$ERROR($$$GeneralError,"Unrecognized pull request type: "_pPullRequestType))
+		}
+		
+		s pOutput($I(pOutput))="Creating Pull Request to merge "_tHead_" to "_tBase
+
+		
+		//Get personal access token from git config
+		s tCommand = ..GitCmdPrefix()_" config remote.origin.url"
+		s tSC = ..RunCmd(tCommand,.tOutput,0) $$$ThrowOnError(tSC)
+		s tPersonalAccessToken = $P($P(tOutput(1),"@",1),":",3)
+		
+		
+		Set tHTTPRequest = ##class(%Net.HttpRequest).%New()
+		set tHTTPRequest.Https=1
+		Set tHTTPRequest.SSLConfiguration="AnySSL"
+		set tHTTPRequest.ContentType="application/json"
+		do tHTTPRequest.SetHeader("Authorization","Bearer "_tPersonalAccessToken)
+	
+		//Create payload as object, and then export to json
+		Set tBody={}
+		do tBody.%Set("title","Merge Request From: "_tHead)
+		do tBody.%Set("head",tHead)
+		do tBody.%Set("base",tBase)
+	
+		//Load request with payload
+		Set tSC = tHTTPRequest.EntityBody.Write(tBody.%ToJSON()) $$$ThrowOnError(tSC)
+		
+		Set tAPIURL = ..RepoProtocol()_"://"_..RepoAPI()_"pulls"
+ 		
+		Set tSC = tHTTPRequest.Post(tAPIURL) $$$ThrowOnError(tSC)
+		Set tHttpResponse = tHTTPRequest.HttpResponse
+		Set tStatusCode = tHttpResponse.StatusCode
+		If 'tStatusCode?1"2"2N {
+			$$$ThrowOnError($$$ERROR($$$GeneralError,"PullRequest failed with HTTP code: "_tStatusCode))
+		}
+
+		Set tResponseString = tHttpResponse.Data.Read()
+		Set tResponseData=##class(%DynamicObject).%FromJSON(tResponseString)
+		
+		Set tPullRequestNumber = tResponseData.%Get("number")
+		
+		Set tPullRequestURI = ..RepoProtocol()_"://"_$REPLACE(..RepoURL(),".git","")_"/pull/"_tPullRequestNumber
+		
+		s pOutput($I(pOutput))=""
+		s pOutput($I(pOutput))="Pull Request may be accessed at: <a href='"_tPullRequestURI_"' target='_blank'>"_tPullRequestURI_"</a>"
+		s pOutput($I(pOutput))=""
+		s pOutput($I(pOutput))="-------------------------------"
+		
+		//The following is an attempt to set an assignee or reviewer on the Pull request - but is not functional yet
+		/*
+		//This needs to be a setting
+		Set tAssignees=[]
+		Do tAssignees.%Push("AdamSalwen")
+		
+		Set tBody={}
+		do tBody.%Set("assignees",tAssignees)
+		
+		Set tHTTPRequest = ##class(%Net.HttpRequest).%New()
+		set tHTTPRequest.Https=1
+		Set tHTTPRequest.SSLConfiguration="AnySSL"
+		set tHTTPRequest.ContentType="application/json"
+		//do tHTTPRequest.SetHeader("Authorization","Basic "_tPersonalAccessToken)
+		Set tSC = tHTTPRequest.EntityBody.Write(tBody.%ToJSON()) $$$ThrowOnError(tSC)
+		
+		Set tAPIURL = ..RepoProtocol()_"://"_..RepoAPI()_"issues/"_tPullRequestNumber
+		
+		Set tSC = tHTTPRequest.Post(tAPIURL) $$$ThrowOnError(tSC)
+		Set tHttpResponse = tHTTPRequest.HttpResponse
+		Set tStatusCode = tHttpResponse.StatusCode
+		If 'tStatusCode?1"2"2N {
+			$$$ThrowOnError($$$ERROR($$$GeneralError,"PullRequest failed with HTTP code: "_tStatusCode))
+		}
+
+		Set tResponseString = tHttpResponse.Data.Read()
+		Set tResponseData=##class(%DynamicObject).%FromJSON(tResponseString)
+		
+		w !,tResponseString
+		
+		*/
+		
+	} catch e {
+		s tSC = e.AsStatus()
+		Set pOutput($increment(pOutput))=e.DisplayString()
+	}
+	Quit tSC
 }
 
 }

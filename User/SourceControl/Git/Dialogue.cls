@@ -31,8 +31,9 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <text id="Create Bugfix Branch" hidden="true" name="Create Bugfix Branch" label="Branch name: bugfix/" required="false" size="100"/>
 <select id="Merge From Branch" hidden="true" name="Merge From Branch" showEmpty="false" width="100" label="Merge From Branch:" required="false"/>
 <password id="Clone Repository" hidden="true" name="Clone Repository" label="Repository user account password:" required="false" size="100"/>
-<html id="Merge to Team and Delete" hidden="true"/>
-<html id="Merge to Release and Delete" hidden="true"/>
+<html id="Request Merge to Team Branch" hidden="true"/>
+<html id="Request Merge to Develop Branch" hidden="true"/>
+<html id="Request Merge to Release Branch" hidden="true"/>
 <submit caption="Submit"/>
 </form>
 <html id="Output" hidden="true" OnDrawContent="DrawOutput"/>
@@ -112,13 +113,16 @@ Method %OnAfterCreatePage() As %Status
 			
 			if tUserAction="Switch to Branch" {
 				Set ..%GetComponentById(tUserAction).valueList = ##class(User.SourceControl.Git.Utils).BranchList(1)
-			} elseif tUserAction="Merge to Team and Delete" {
+			} elseif tUserAction="Request Merge to Team Branch" {
 				Set tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
-				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Merge from: "_tCurrentBranch_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once merge is completed, "_tCurrentBranch_" will be deleted.<br><br>"
-			} elseif tUserAction="Merge to Release and Delete" {
+				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Create Pull Request to merge from: "_tCurrentBranch_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once the Pull Request is completed, "_tCurrentBranch_" may be deleted.<br><br>"
+			} elseif tUserAction="Request Merge to Develop Branch" {
+				Set tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
+				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Create Pull Request to merge from: "_tCurrentBranch_"<br>Merge to: develop<br><br>Once the Pull Request is completed, "_tCurrentBranch_" may be deleted.<br><br>"
+			} elseif tUserAction="Request Merge to Release Branch" {
 				Set tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
 				s tReleaseBranch = $P($REPLACE(tCurrentBranch,"bugfix/","release/"),"/",1,2)
-				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Merge from: "_tCurrentBranch_"<br>Merge to: "_tReleaseBranch_"<br><br>Once merge is completed, "_tCurrentBranch_" will be deleted.<br><br>"
+				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Create Pull Request to merge from: "_tCurrentBranch_"<br>Merge to: "_tReleaseBranch_"<br><br>Once the Pull Request is completed, "_tCurrentBranch_" may be deleted.<br><br>"
 			} elseif tUserAction="Create Release Branch" {
 				s tSC = ##class(User.SourceControl.Git.Utils).CommitSelectList(.tReleaseSelectDisplayList,.tReleaseSelectValueList) $$$ThrowOnError(tSC)
 				Set ..%GetComponentById("Create Release Branch Select").valueList = tReleaseSelectValueList
