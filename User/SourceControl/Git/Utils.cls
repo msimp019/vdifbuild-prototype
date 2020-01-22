@@ -46,9 +46,15 @@ Parameter GitBugfixMenuItems = ",Commit,Push,Pull,Request Merge to Release Branc
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
 
+/// This method will allow for an extended global reference to the global which store configuration settings
+/// By default, the database the global belongs to is defined by class parameter to be HSCUSTOM
+/// However, this may be overridden on a namespace basis to use different storage
+/// This is necessary in order for Studio to have different settings in a specific namespace
+/// Note that only the specific namespace in which the setting is set may have a custom install namespace value
+/// For all other namespaces, the default will be HSCUSTOM.
 ClassMethod InstallNamespaceStorage() As %String [ CodeMode = expression ]
 {
-$Replace(..#Storage,"^","^["""_..#InstallNamespace_"""]")
+$Replace(..#Storage,"^","^["""_$G(@..#Storage@("%user",$USERNAME,"%installNamespace"),..#InstallNamespace)_"""]")
 }
 
 /// Returns root temp folder
@@ -86,19 +92,19 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch"))
 
 ClassMethod ReleaseBranchBase() As %String [ CodeMode = expression ]
 {
-..#ReleaseBranchBase
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase"))
 }
 
 /// Returns root temp folder
 ClassMethod RepoURL() As %String [ CodeMode = expression ]
 {
-..#RepoURL
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoURL"))
 }
 
 /// Returns root temp folder
 ClassMethod RepoAPI() As %String [ CodeMode = expression ]
 {
-"api."_$P(..#RepoURL,"/",1)_"/repos/"_$P(..#RepoURL,"/",2)_"/"_$P($P(..#RepoURL,"/",3),".",1)_"/"
+"api."_$P(..RepoURL(),"/",1)_"/repos/"_$P(..RepoURL(),"/",2)_"/"_$P($P(..RepoURL(),"/",3),".",1)_"/"
 }
 
 /// Returns root temp folder
@@ -110,13 +116,13 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder"))
 /// Returns root temp folder
 ClassMethod RepoName() As %String [ CodeMode = expression ]
 {
-$P($P(..#RepoURL,"/",$L(..#RepoURL,"/")),".",1)
+$P($P(..RepoURL(),"/",$L(..RepoURL(),"/")),".",1)
 }
 
 /// Returns root temp folder
 ClassMethod RepoProtocol() As %String [ CodeMode = expression ]
 {
-..#RepoProtocol
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol"))
 }
 
 /// Returns default git command prefix
@@ -138,7 +144,7 @@ ClassMethod NeedSettings() As %Boolean [ CodeMode = expression ]
 
 ClassMethod InstallNamespace() As %String [ CodeMode = expression ]
 {
-..#InstallNamespace
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%installNamespace"))
 }
 
 ClassMethod CurrentBranch() As %String
@@ -270,18 +276,27 @@ ClassMethod CommitSelectList(ByRef pDisplayList As %String = "", ByRef pValueLis
 
 ClassMethod UpdateSettings(ByRef settings) As %Status
 {
-  
+	//Configure settings storage first
+    s tTempInstallNamespaceStorage = $Replace(..#Storage,"^","^["""_$G(settings("installNamespace"),..#InstallNamespace)_"""]")
+    s @tTempInstallNamespaceStorage@("%user",$USERNAME,"%installNamespace") = $G(settings("installNamespace"),..#InstallNamespace)
+    
+    // set environment properties - use class parameters if not supplied in settings array
+    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase") = $G(settings("releaseBranchBase"),..#ReleaseBranchBase)
+	s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoURL") = $G(settings("repoURL"),..#RepoURL)
+    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol") = $G(settings("repoProtocol"),..#RepoProtocol)
+    
     // set user properties - username and password to start with.
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%userName") = settings("userName")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = settings("personName")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = settings("personEmail")
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = $G(settings("teamBranch"))
-    
+    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = settings("teamBranch")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder") = ##class(%File).NormalizeDirectory(settings("repoBaseFolder"))
     
     //Build user's repo folder using the base folder, username, and repository name
     s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoName())
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
+    
+    Quit $$$OK
 }
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
@@ -636,7 +651,7 @@ ClassMethod UserAction(InternalName As %String, MenuName As %String, ByRef Targe
     if (menuName = "Source Control Main Menu") {
         if (menuItemName = "Settings") {
             s Action = 2
-            #dim defNamespace As %String = ..#InstallNamespace
+            #dim defNamespace As %String = ..InstallNamespace()
             Set Target="/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Setting.cls"
         } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) || ..IsBugfixMenuGitCommand(menuItemName) {
             s Action = 2
@@ -1288,7 +1303,7 @@ ClassMethod TestDialogue(pMenuCommand, pCommandValue = "")
 	}
 }
 
-ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch)
+ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch, pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "")
 {
 	
 	Set tSettings("repoBaseFolder")=pRepoBaseFolder
@@ -1296,6 +1311,11 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	Set tSettings("personName")=pPersonName
 	Set tSettings("personEmail")=pPersonEmail
 	Set tSettings("teamBranch")=pTeamBranch
+	Set:pRepoURL'="" tSettings("repoURL")=pRepoURL
+	Set:pRepoProtocol'="" tSettings("repoProtocol")=pRepoProtocol
+	Set:pReleaseBranchBase'="" tSettings("releaseBranchBase")=pReleaseBranchBase
+	Set:pInstallNamespace'="" tSettings("installNamespace")=pInstallNamespace
+	
 	d ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
 
