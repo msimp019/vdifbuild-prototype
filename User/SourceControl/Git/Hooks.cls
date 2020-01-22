@@ -35,16 +35,16 @@ XData Menu
 <MenuItem Name="Push" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Create Feature Branch" Save = "001"/>
-<MenuItem Name="Create Release Branch" Save = "001"/>
-<MenuItem Name="Re-create Team Branch" Save = "001"/>
+<!--<MenuItem Name="Create Release Branch" Save = "001"/>-->
+<!--<MenuItem Name="Re-create Team Branch" Save = "001"/>-->
 <MenuItem Name="Create Bugfix Branch" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
-<MenuItem Name="Pull from Develop" Save = "001"/>
+<!--<MenuItem Name="Pull from int/dev" Save = "001"/>-->
 <MenuItem Name="Pull from Team" Save = "001"/>
 <MenuItem Name="Diff with Team" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Request Merge to Team Branch" Save = "001"/>
-<MenuItem Name="Request Merge to Develop Branch" Save = "001"/>
+<!--<MenuItem Name="Request Merge to int/dev Branch" Save = "001"/>-->
 <MenuItem Name="Request Merge to Release Branch" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <!--<MenuItem Name="Resolve Merge Conflicts" Save = "001"/>-->
@@ -95,7 +95,7 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 0
 		} elseif name = "Resolve Merge Conflicts" {
 			s Enabled = 1
-		} elseif (##class(User.SourceControl.Git.Utils).IsDevelopMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"DEVELOP")>0) {
+		} elseif (##class(User.SourceControl.Git.Utils).IsDevelopMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"INT/DEV")>0) {
 			s Enabled = 1
 		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
 			s Enabled = 1

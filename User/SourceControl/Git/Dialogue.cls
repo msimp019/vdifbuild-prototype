@@ -14,7 +14,7 @@ Parameter RESOURCE = "AH_SourceControl";
 /// Page title
 Property PageTitle As %ZEN.Datatype.caption [ InitialExpression = {$$$TextHTML("Source Control")} ];
 
-Parameter NoDialogueActions = ",Status,Pull,Push,Add,Pull from Develop,Pull from Team,Diff with Team,Load Branch,Re-create Team Branch,";
+Parameter NoDialogueActions = ",Status,Pull,Push,Add,Pull from int/dev,Pull from Team,Diff with Team,Load Branch,Re-create Team Branch,";
 
 /// This XML block defines the contents of this page.
 XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
@@ -32,7 +32,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <select id="Merge From Branch" hidden="true" name="Merge From Branch" showEmpty="false" width="100" label="Merge From Branch:" required="false"/>
 <password id="Clone Repository" hidden="true" name="Clone Repository" label="Repository user account password:" required="false" size="100"/>
 <html id="Request Merge to Team Branch" hidden="true"/>
-<html id="Request Merge to Develop Branch" hidden="true"/>
+<html id="Request Merge to int/dev Branch" hidden="true"/>
 <html id="Request Merge to Release Branch" hidden="true"/>
 <submit caption="Submit"/>
 </form>
@@ -116,9 +116,9 @@ Method %OnAfterCreatePage() As %Status
 			} elseif tUserAction="Request Merge to Team Branch" {
 				Set tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
 				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Create Pull Request to merge from: "_tCurrentBranch_"<br>Merge to: "_##class(User.SourceControl.Git.Utils).TeamBranch()_"<br><br>Once the Pull Request is completed, "_tCurrentBranch_" may be deleted.<br><br>"
-			} elseif tUserAction="Request Merge to Develop Branch" {
+			} elseif tUserAction="Request Merge to int/dev Branch" {
 				Set tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
-				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Create Pull Request to merge from: "_tCurrentBranch_"<br>Merge to: develop<br><br>Once the Pull Request is completed, "_tCurrentBranch_" may be deleted.<br><br>"
+				Set ..%GetComponentById(tUserAction).content = "Please confirm:<br><br>Create Pull Request to merge from: "_tCurrentBranch_"<br>Merge to: int/dev<br><br>Once the Pull Request is completed, "_tCurrentBranch_" may be deleted.<br><br>"
 			} elseif tUserAction="Request Merge to Release Branch" {
 				Set tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
 				s tReleaseBranch = $P($REPLACE(tCurrentBranch,"bugfix/","release/"),"/",1,2)
@@ -130,6 +130,8 @@ Method %OnAfterCreatePage() As %Status
 				Set ..%GetComponentById("Create Release Branch Select").hidden=0
 			} elseif tUserAction="Create Bugfix Branch" {
 				Set ..%GetComponentById(tUserAction).label = "Branch name: "_$REPLACE(##class(User.SourceControl.Git.Utils).CurrentBranch(),"release/","bugfix/")_"/"
+			} elseif tUserAction="Create Feature Branch" {
+				Set ..%GetComponentById(tUserAction).label = "Branch name: "_$REPLACE(##class(User.SourceControl.Git.Utils).CurrentBranch(),"team-dev/","feature/")_"/"
 			}
 
 			

@@ -33,10 +33,10 @@ Parameter GitMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Br
 Parameter GitDevelopMenuItems = ",Pull,Clone Repository,Status,Switch to Branch,Load Branch,Re-create Team Branch,Create Release Branch,";
 
 /// Menu Items that show, but are only enabled when on a Feature branch.
-Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from Develop,Pull from Team,Diff with Team,Request Merge to Team Branch,";
+Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from int/dev,Pull from Team,Diff with Team,Request Merge to Team Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitTeamMenuItems = ",Pull,Pull from Develop,Create Feature Branch,Re-create Team Branch,Request Merge to Develop Branch,";
+Parameter GitTeamMenuItems = ",Pull,Pull from int/dev,Create Feature Branch,Re-create Team Branch,Request Merge to int/dev Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
 Parameter GitReleaseMenuItems = ",Commit,Push,Pull,Create Bugfix Branch,";
@@ -168,7 +168,7 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 {
 	//Always include develop and team branches
 	s tTeamBranch = ..TeamBranch()
-	s tBranchList=",develop,"_tTeamBranch
+	s tBranchList=",int/dev,"_tTeamBranch
 	
 	//Get a list of feature branches both local and remote as per paremeter
 	s tCommand = ..GitCmdPrefix()
@@ -181,24 +181,10 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 		s tBranch = $REPLACE($E(tOutput(i),3,*),"remotes/origin/","")
 		if tBranchList_"," '[ (tBranch_",") {
 			if $E(tBranch,1,8)="feature/" {
-				
-				//I don't recall what this code is supposed to be doing
-				//However, you shouldn't be able to switch to feature branch that is not from your team branc
-				//So perhaps this code needs to be reworked a bit to accomplish that?
-#;				kill tOutputCheckout
-#;				s tCommand = ..GitCmdPrefix()_" checkout "_tBranch
-#;				s tSC = ..RunCmd(tCommand,.tOutputCheckout,tDisplay)
-#;				if $$$ISERR(tSC) Quit
-#;				
-#;				kill tOutputInitialCommit
-#;				s tCommand = ..GitCmdPrefix()_" log --grep=""Initial commit"" --oneline --decorate"
-#;				s tSC = ..RunCmd(tCommand,.tOutputInitialCommit,tDisplay)
-#;				if $$$ISERR(tSC) Quit
-#;				
-#;				s tInitialCommit = $G(tOutputInitialCommit(1))
-#;				if tInitialCommit [ tTeamBranch {
+				//only list feature branches created from the users team branch
+				if $P(tBranch,"/",2) = $P(tTeamBranch,"/",2) {
 					s tBranchList=tBranchList_","_tBranch
-#;				}
+				}
 			}
 			if (pIncludeReleaseBranches && ($E(tBranch,1,8)="release/")) {
 				s tBranchList=tBranchList_","_tBranch
@@ -212,7 +198,7 @@ ClassMethod BranchList(pIncludeReleaseBranches As %Boolean = 0, pIncludeRemote A
 	Quit tBranchList
 }
 
-ClassMethod CommitSelectList(ByRef pDisplayList As %String = "", ByRef pValueList As %String = "", pSourceBranch As %String = "develop", pIntegrationBranch As %String = "") As %Status
+ClassMethod CommitSelectList(ByRef pDisplayList As %String = "", ByRef pValueList As %String = "", pSourceBranch As %String = "int/dev", pIntegrationBranch As %String = "") As %Status
 {
 	
 	#dim tSC As %Status = $$$OK
@@ -368,8 +354,8 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		} elseif tCommandName = "Create Feature Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
-			s tBranchName = $TR(pSettings(tCommandName)," ","-")
-			if '$FIND(tBranchName,"feature/") s tBranchName = "feature/"_tBranchName
+			s tBranchName = $TR(pSettings(tCommandName)," /","-")
+			if '$FIND(tBranchName,"feature/") s tBranchName = $REPLACE(##class(User.SourceControl.Git.Utils).CurrentBranch(),"team-dev/","feature/")_"/"_tBranchName
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
@@ -384,7 +370,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			//should add syntax checking for branch names
-			s tBranchName = $TR($P(pSettings(tCommandName),"^",1)," ","-")
+			s tBranchName = $TR($P(pSettings(tCommandName),"^",1)," /","-")
 			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
 			
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
@@ -398,18 +384,18 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		} elseif tCommandName = "Create Bugfix Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
-			s tBranchName = $TR(pSettings(tCommandName)," ","-")
+			s tBranchName = $TR(pSettings(tCommandName)," /","-")
 			if '$FIND(tBranchName,"bugfix/") s tBranchName = $REPLACE(##class(User.SourceControl.Git.Utils).CurrentBranch(),"release/","bugfix/")_"/"_tBranchName
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
-		} elseif tCommandName = "Pull from Develop" {
+		} elseif tCommandName = "Pull from int/dev" {
 
 			//Pull just to ensure the release branch base is up to date locally before creating release branch
 			s tPullCommand = tCommand_" pull --rebase"
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 
-			s tCommand = tCommand_" merge origin/develop"
+			s tCommand = tCommand_" merge origin/int/dev"
 		} elseif tCommandName = "Pull from Team" {
 			
 			//Pull just to ensure the release branch base is up to date locally before creating release branch
@@ -478,7 +464,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			//Now delete the bug fix branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
 			
-		} elseif tCommandName = "Request Merge to Develop Branch" {
+		} elseif tCommandName = "Request Merge to int/dev Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
 			
@@ -490,8 +476,8 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tPullRequestType = "TeamMerge"
 			s tSC = ..CreatePullRequest(tPullRequestType, .pOutput) $$$ThrowOnError(tSC)			
 
-			//Now checkout the develop branch in order to delete the local team branch
-			s tCheckoutTargetBranch = tCommand_" checkout develop"
+			//Now checkout the int/dev branch in order to delete the local team branch
+			s tCheckoutTargetBranch = tCommand_" checkout int/dev"
 			s tSC = ..RunCmd(tCheckoutTargetBranch,.pOutput) $$$ThrowOnError(tSC)
 
 			//Now delete the team branch using -D to force the delete
@@ -508,10 +494,10 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tRemoteDeleteCommand,.pOutput) $$$ThrowOnError(tSC)
 
 			//Now checkout the team branch in order to delete the local team branch
-			s tCheckoutDevelopBranch = tCommand_" checkout develop"
+			s tCheckoutDevelopBranch = tCommand_" checkout int/dev"
 			s tSC = ..RunCmd(tCheckoutDevelopBranch,.pOutput) $$$ThrowOnError(tSC)
 			
-			//Pull develop to ensure have latest before recreating the team branch
+			//Pull int/dev to ensure have latest before recreating the team branch
 			s tPullCommand = tCommand_" pull --rebase"
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 
@@ -1697,10 +1683,10 @@ ClassMethod CreatePullRequest(pPullRequestType As %String, ByRef pOutput As %Str
 		
 		if pPullRequestType="FeatureMerge" {
 			Set tHead = ..CurrentBranch()
-			Set tBase = ..TeamBranch()
+			Set tBase = $P($REPLACE(tHead,"feature/","team-dev/"),"/",1,2)
 		} elseif pPullRequestType="TeamMerge" {
 			Set tHead = ..TeamBranch()
-			Set tBase = "develop"
+			Set tBase = "int/dev"
 		} elseif pPullRequestType="BugFixMerge" {
 			Set tHead = ..CurrentBranch()
 			Set tBase = $P($REPLACE(tHead,"bugfix/","release/"),"/",1,2)
