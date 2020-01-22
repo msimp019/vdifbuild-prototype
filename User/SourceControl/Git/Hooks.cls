@@ -3,11 +3,9 @@ Include Ensemble
 /// <a href="http://www.readycomputing.com/">
 /// <img src="http://www.readycomputing.com/images/header/headerLogo.png" alt="Ready Computing" >
 /// </a>
-/// <br>
+/// <br/>
 Class User.SourceControl.Git.Hooks Extends %Studio.Extension.Base
 {
-
-Parameter IgnorePackage = "User.SourceControl";
 
 // RC: Add Name="%Separator" for all separators
 
@@ -209,7 +207,7 @@ Method IsReadOnly(InternalName As %String) As %Boolean
 	s tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
 	if $F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0 Set tReadOnly = 0
 	if $F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0 Set tReadOnly = 0
-	if (InternalName[..#IgnorePackage) set tReadOnly = 0
+	
 	Quit tReadOnly
 }
 
@@ -239,7 +237,7 @@ Method OnBeforeSave(InternalName As %String, Location As %String = "", Object As
 /// just saved. It can be use to export this documement to an external form for example.
 Method OnAfterSave(InternalName As %String, Object As %RegisteredObject = {$$$NULLOREF}) As %Status
 {
-	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() && '(InternalName[..#IgnorePackage){
+	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() {
 		If '##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
 			//Always add new files to source control by default
 			s tSC = ##class(User.SourceControl.Git.Utils).AddToSourceControl(InternalName)
