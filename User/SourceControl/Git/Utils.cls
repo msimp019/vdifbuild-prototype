@@ -16,6 +16,12 @@ Parameter NOTUDLEXTENSIONS = {$lb("hl7","dfi","lut")};
 
 Parameter InstallNamespace = "HSCUSTOM";
 
+Parameter ReleaseBranchBase = "int/sqa2c";
+
+Parameter RepoProtocol = "https";
+
+Parameter RepoURL = "github.com/msimp019/vdifbuild-prototype.git";
+
 /// If equals to 0 all tortoise-git calls are asynchronous<br/>
 /// Otherwise calls are synchronous and import is automatically executed after git calls.
 Parameter IsSYNC = 0;
@@ -80,37 +86,37 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch"))
 
 ClassMethod ReleaseBranchBase() As %String [ CodeMode = expression ]
 {
-$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase"))
+..#ReleaseBranchBase
 }
 
 /// Returns root temp folder
 ClassMethod RepoURL() As %String [ CodeMode = expression ]
 {
-$G(@..InstallNamespaceStorage()@("%repoURL"))
+..#RepoURL
 }
 
 /// Returns root temp folder
 ClassMethod RepoAPI() As %String [ CodeMode = expression ]
 {
-$G(@..InstallNamespaceStorage()@("%repoAPI"))
+"api."_$P(..#RepoURL,"/",1)_"/repos/"_$P(..#RepoURL,"/",2)_"/"_$P($P(..#RepoURL,"/",3),".",1)_"/"
 }
 
 /// Returns root temp folder
 ClassMethod RepoBaseFolder() As %String [ CodeMode = expression ]
 {
-$G(@..InstallNamespaceStorage()@("%repoBaseFolder"))
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder"))
 }
 
 /// Returns root temp folder
 ClassMethod RepoName() As %String [ CodeMode = expression ]
 {
-$G(@..InstallNamespaceStorage()@("%repoName"))
+$P($P(..#RepoURL,"/",$L(..#RepoURL,"/")),".",1)
 }
 
 /// Returns root temp folder
 ClassMethod RepoProtocol() As %String [ CodeMode = expression ]
 {
-$G(@..InstallNamespaceStorage()@("%repoProtocol"))
+..#RepoProtocol
 }
 
 /// Returns default git command prefix
@@ -270,17 +276,9 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = settings("personName")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = settings("personEmail")
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = $G(settings("teamBranch"))
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase") = $G(settings("releaseBranchBase"))
     
-    If $System.Security.Check("AH_SourceControlAdmin","USE") {    
-	    // set Repository url - example: bitbucket.org/readycomputinginc/alohr.git
-	    s @..InstallNamespaceStorage()@("%repoURL") = settings("repoURL")
-	    s @..InstallNamespaceStorage()@("%repoAPI") = "api."_$P(settings("repoURL"),"/",1)_"/repos/"_$P(settings("repoURL"),"/",2)_"/"_$P($P(settings("repoURL"),"/",3),".",1)_"/"
-	    s @..InstallNamespaceStorage()@("%repoProtocol") = settings("repoProtocol")
-	    s @..InstallNamespaceStorage()@("%repoName") = $P($P(settings("repoURL"),"/",$L(settings("repoURL"),"/")),".",1)
-	    // set Repository url - example: bitbucket.org/readycomputinginc/alohr.git
-	    s @..InstallNamespaceStorage()@("%repoBaseFolder") = ##class(%File).NormalizeDirectory(settings("repoBaseFolder"))
-    }    
+    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder") = ##class(%File).NormalizeDirectory(settings("repoBaseFolder"))
+    
     //Build user's repo folder using the base folder, username, and repository name
     s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoName())
     s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
@@ -355,7 +353,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		} elseif tCommandName = "Create Feature Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
-			s tBranchName = pSettings(tCommandName)
+			s tBranchName = $TR(pSettings(tCommandName)," ","-")
 			if '$FIND(tBranchName,"feature/") s tBranchName = "feature/"_tBranchName
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
@@ -371,7 +369,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			//should add syntax checking for branch names
-			s tBranchName = $P(pSettings(tCommandName),"^",1)
+			s tBranchName = $TR($P(pSettings(tCommandName),"^",1)," ","-")
 			if '$FIND(tBranchName,"release/") s tBranchName = "release/"_tBranchName
 			
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
@@ -385,7 +383,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		} elseif tCommandName = "Create Bugfix Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
-			s tBranchName = pSettings(tCommandName)
+			s tBranchName = $TR(pSettings(tCommandName)," ","-")
 			if '$FIND(tBranchName,"bugfix/") s tBranchName = $REPLACE(##class(User.SourceControl.Git.Utils).CurrentBranch(),"release/","bugfix/")_"/"_tBranchName
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
@@ -1290,17 +1288,14 @@ ClassMethod TestDialogue(pMenuCommand, pCommandValue = "")
 	}
 }
 
-ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pRepoURL, pRepoProtocol, pPersonName, pPersonEmail, pTeamBranch, pReleaseBase)
+ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch)
 {
 	
 	Set tSettings("repoBaseFolder")=pRepoBaseFolder
 	Set tSettings("userName")=pUserName
-	Set tSettings("repoURL")=pRepoURL
-	Set tSettings("repoProtocol")=pRepoProtocol
 	Set tSettings("personName")=pPersonName
 	Set tSettings("personEmail")=pPersonEmail
 	Set tSettings("teamBranch")=pTeamBranch
-	Set tSettings("releaseBranchBase")=pReleaseBase
 	d ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
 

@@ -8,9 +8,6 @@ Include HS.Common
 Class User.SourceControl.Git.Setting Extends HS.UI.Template [ DependsOn = (HS.UI.Custom.tablePane, HS.UI.Custom.tabGroup) ]
 {
 
-/// Security requirement
-Parameter RESOURCE = "AH_SourceControl";
-
 /// Page title
 Property PageTitle As %ZEN.Datatype.caption [ InitialExpression = {$$$TextHTML("Source Control Settings")} ];
 
@@ -56,9 +53,6 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <text id="personName" name="personName" label="Your Name:" title="Your Name" required="true" size="100"/>
 <text id="personEmail" name="personEmail" label="Your Email:" title="you@example.com" required="true" size="100"/>
 <text id="teamBranch" name="teamBranch" label="Team Branch:" title="example: team-dev/teamA" required="true" size="100"/>
-<text id="releaseBranchBase" name="releaseBranchBase" label="Release Branch Base:" title="example: int/sqa2c" required="true" size="100"/>
-<text id="repoProtocol" name="repoProtocol" label="Repository Protocol:" title="http or https" required="true" size="100"/>
-<text id="repoURL" name="repoURL" label="Repository URL:" title="(e.g. c:\temp)" required="true" size="100"/>
 <text id="repoBaseFolder" name="repoBaseFolder" label="Base path for all user's repositories:" title="(e.g. c:\temp)" required="true" size="100"/>
 <submit caption="Save"/>
 </form>
@@ -89,12 +83,9 @@ ClassMethod SubmitForm(pSubmit As %ZEN.Submit) As %Status
 	#dim tSettings As %String
 	Set tSettings("repoBaseFolder")=pSubmit.%GetValue("repoBaseFolder")
 	Set tSettings("userName")=pSubmit.%GetValue("userName")
-	Set tSettings("repoURL")=pSubmit.%GetValue("repoURL")
-	Set tSettings("repoProtocol")=pSubmit.%GetValue("repoProtocol")
 	Set tSettings("personName")=pSubmit.%GetValue("personName")
 	Set tSettings("personEmail")=pSubmit.%GetValue("personEmail")
 	Set tSettings("teamBranch")=pSubmit.%GetValue("teamBranch")
-	Set tSettings("releaseBranchBase")=pSubmit.%GetValue("releaseBranchBase")
 	d ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 	QUIT $$$OK
 }
@@ -111,19 +102,10 @@ Method %OnAfterCreatePage() As %Status
 
 	Set tCtrl=..%GetComponentById("repoBaseFolder")
 	Set tCtrl.value=##class(User.SourceControl.Git.Utils).RepoBaseFolder()
-	if '$System.Security.Check("AH_SourceControlAdmin","USE") Set tCtrl.disabled = 1
 	
 	Set tCtrl=..%GetComponentById("userName")
 	Set tCtrl.value=##class(User.SourceControl.Git.Utils).UserName()
 	
-	Set tCtrl=..%GetComponentById("repoProtocol")
-	Set tCtrl.value=##class(User.SourceControl.Git.Utils).RepoProtocol()
-	if '$System.Security.Check("AH_SourceControlAdmin","USE") Set tCtrl.disabled = 1
-	
-	Set tCtrl=..%GetComponentById("repoURL")
-	Set tCtrl.value=##class(User.SourceControl.Git.Utils).RepoURL()
-	if '$System.Security.Check("AH_SourceControlAdmin","USE") Set tCtrl.disabled = 1
-
 	Set tCtrl=..%GetComponentById("personName")
 	Set tCtrl.value=##class(User.SourceControl.Git.Utils).PersonName()
 	
@@ -133,8 +115,6 @@ Method %OnAfterCreatePage() As %Status
 	Set tCtrl=..%GetComponentById("teamBranch")
 	Set tCtrl.value=##class(User.SourceControl.Git.Utils).TeamBranch()
 	
-	Set tCtrl=..%GetComponentById("releaseBranchBase")
-	Set tCtrl.value=##class(User.SourceControl.Git.Utils).ReleaseBranchBase()
 	
 #;	if '##class(User.SourceControl.Git.Utils).NeedSettings() {
 #;		if '##class(User.SourceControl.Git.Utils).IsNamespaceInGit() {
