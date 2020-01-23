@@ -39,7 +39,7 @@ Parameter GitFeatureMenuItems = ",Commit,Push,Pull,Pull from int/dev,Pull from T
 Parameter GitTeamMenuItems = ",Pull,Pull from int/dev,Create Feature Branch,Re-create Team Branch,Request Merge to int/dev Branch,";
 
 /// Menu Items that show, but are only enabled when on a Team branch.
-Parameter GitReleaseMenuItems = ",Commit,Push,Pull,Create Bugfix Branch,";
+Parameter GitReleaseMenuItems = ",Pull,Create Bugfix Branch,";
 
 Parameter GitBugfixMenuItems = ",Commit,Push,Pull,Request Merge to Release Branch,";
 
@@ -262,27 +262,35 @@ ClassMethod CommitSelectList(ByRef pDisplayList As %String = "", ByRef pValueLis
 
 ClassMethod UpdateSettings(ByRef settings) As %Status
 {
-	//Configure settings storage first
-    s tTempInstallNamespaceStorage = $Replace(..#Storage,"^","^["""_$G(settings("installNamespace"),..#InstallNamespace)_"""]")
-    s @tTempInstallNamespaceStorage@("%user",$USERNAME,"%installNamespace") = $G(settings("installNamespace"),..#InstallNamespace)
-    
-    // set environment properties - use class parameters if not supplied in settings array
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase") = $G(settings("releaseBranchBase"),..#ReleaseBranchBase)
-	s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoURL") = $G(settings("repoURL"),..#RepoURL)
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol") = $G(settings("repoProtocol"),..#RepoProtocol)
-    
-    // set user properties - username and password to start with.
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%userName") = settings("userName")
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = settings("personName")
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = settings("personEmail")
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = settings("teamBranch")
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder") = ##class(%File).NormalizeDirectory(settings("repoBaseFolder"))
-    
-    //Build user's repo folder using the base folder, username, and repository name
-    s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoName())
-    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
-    
-    Quit $$$OK
+	
+	#dim tSC As %Status = $$$OK
+	#dim e As %Exception.AbstractException
+	
+	Try {
+		//Configure settings storage first
+	    s tTempInstallNamespaceStorage = $Replace(..#Storage,"^","^["""_$G(settings("installNamespace"),..#InstallNamespace)_"""]")
+	    s @tTempInstallNamespaceStorage@("%user",$USERNAME,"%installNamespace") = $G(settings("installNamespace"),..#InstallNamespace)
+	    
+	    // set environment properties - use class parameters if not supplied in settings array
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase") = $G(settings("releaseBranchBase"),..#ReleaseBranchBase)
+		s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoURL") = $G(settings("repoURL"),..#RepoURL)
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol") = $G(settings("repoProtocol"),..#RepoProtocol)
+	    
+	    // set user properties - username and password to start with.
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%userName") = settings("userName")
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = settings("personName")
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = settings("personEmail")
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = settings("teamBranch")
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder") = ##class(%File).NormalizeDirectory(settings("repoBaseFolder"))
+	    
+	    //Build user's repo folder using the base folder, username, and repository name
+	    s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoName())
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
+		
+	} catch e {
+		s tSC = e.AsStatus()
+	}
+	Quit tSC
 }
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
@@ -1289,7 +1297,7 @@ ClassMethod TestDialogue(pMenuCommand, pCommandValue = "")
 	}
 }
 
-ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch, pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "")
+ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch, pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "") As %Status
 {
 	
 	Set tSettings("repoBaseFolder")=pRepoBaseFolder
@@ -1302,7 +1310,7 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	Set:pReleaseBranchBase'="" tSettings("releaseBranchBase")=pReleaseBranchBase
 	Set:pInstallNamespace'="" tSettings("installNamespace")=pInstallNamespace
 	
-	d ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
+	Quit ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
 
 ClassMethod LoadBranchLocal(ByRef pOutput As %String) As %Status
@@ -1401,6 +1409,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	#dim tStream As %Stream.Object
+	#dim tDeployStatus As %Boolean = 1
 	
 	Try {
 
@@ -1474,8 +1483,10 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 	} catch e {
 		s tSC = e.AsStatus()
+		w !,"Error Building Deploy Package: "_e.DisplayString()
+		s tDeployStatus = 0
 	}
-	Quit tSC
+	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
 }
 
 ClassMethod LoadDeployment(pFilename) As %Status
@@ -1602,6 +1613,10 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	
 		//Compile latest service and run projection on server
 		set atelierBaseEndpoint="http://"_pTargetHost_":"_pTargetPort_"/api/atelier"
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.ImportObject.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.ImportRequest.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.Service.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
 		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.Projection.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)

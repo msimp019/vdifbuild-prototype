@@ -2,10 +2,12 @@
 def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = 'HS01'
 def HS_BuildNamespace = 'VABUILD'
-def Git_SourceBranch = env.Git_SourceBranch
+def Git_EnvBranch = env.Git_EnvBranch
 def Git_IntBranch = env.Git_IntBranch
 def Git_RepoURL = env.Git_RepoURL
 def HS_Environment = env.HS_Environment
+def CM_Name = env.CM_Name
+def CM_Email = env.CM_Email
 date = new Date()
 def dateTimeStamp = date.format("yyyyMMddHHmmss")
 
@@ -26,12 +28,12 @@ pipeline {
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
 				
-				sh "./buildInstallerNamespace.sh $HS_BuildInstance '${WORKSPACE}' '%SYS' $HS_BuildTargetFolder $HS_BuildNamespace $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_SourceBranch $Git_IntBranch"
+				sh "./buildInstallerNamespace.sh $HS_BuildInstance '${WORKSPACE}' '%SYS' $HS_BuildTargetFolder $HS_BuildNamespace $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_EnvBranch $Git_IntBranch $CM_Name $CM_Email"
 			}
         }
         stage('Build') {
             steps {
-				sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $Git_SourceBranch $Git_IntBranch"
+				sh "./buildDeployPackage.sh $HS_BuildInstance $HS_BuildNamespace $HS_DeployFileName $Git_EnvBranch $Git_IntBranch"
 			}
         }
 		stage('Deploy') {

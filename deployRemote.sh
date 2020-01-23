@@ -17,7 +17,6 @@ expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).De
 expect { 
 	"SUCCESS"  { send "H\r"; puts "SUCCESS"; exit 0 }
 	"FAILURE"  { send "H\r"; puts "FAILURE"; exit 1 }
-	
 }
 
 
