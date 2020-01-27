@@ -30,7 +30,7 @@ XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 <multiSelectSet id="Create Release Branch Select" hidden="true" name="Create Release Branch Select" label="Select Files for Release:" required="false"/>
 <text id="Create Bugfix Branch" hidden="true" name="Create Bugfix Branch" label="Branch name: bugfix/" required="false" size="100"/>
 <select id="Merge From Branch" hidden="true" name="Merge From Branch" showEmpty="false" width="100" label="Merge From Branch:" required="false"/>
-<password id="Clone Repository" hidden="true" name="Clone Repository" label="Repository user account password:" required="false" size="100"/>
+<password id="Clone Repository" hidden="true" name="Clone Repository" label="GitHub personal access token:" required="false" size="100"/>
 <html id="Request Merge to Team Branch" hidden="true"/>
 <html id="Request Merge to int/dev Branch" hidden="true"/>
 <html id="Request Merge to Release Branch" hidden="true"/>
