@@ -147,6 +147,12 @@ ClassMethod InstallNamespace() As %String [ CodeMode = expression ]
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%installNamespace"))
 }
 
+/// Returns Package to Ignore
+ClassMethod IgnorePackage() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%ignorePackage"))
+}
+
 ClassMethod CurrentBranch() As %String
 {
 	s tCurrentBranch=""
