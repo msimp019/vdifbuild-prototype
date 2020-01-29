@@ -66,7 +66,7 @@ ClassMethod SetProductionName() As %Status
 		
 		zn "VABUILD"
 		
-		s ^Ens.Configuration("csp","LastProduction") = "HSCUSTOMPKG.Production "
+		s ^Ens.Configuration("csp","LastProduction") = "HSCUSTOMPKG.Production"
 		
 		zn "%SYS"
 		
