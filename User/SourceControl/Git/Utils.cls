@@ -22,6 +22,8 @@ Parameter RepoProtocol = "https";
 
 Parameter RepoURL = "github.com/msimp019/vdifbuild-prototype.git";
 
+Parameter CICDURL = "github.com/msimp019/vdifbuild-prototype.git";
+
 /// If equals to 0 all tortoise-git calls are asynchronous<br/>
 /// Otherwise calls are synchronous and import is automatically executed after git calls.
 Parameter IsSYNC = 0;
@@ -295,9 +297,9 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
+	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
-	
 	m ^XABS=pSettings
 	return 1
 	Try {
@@ -306,46 +308,24 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		
 		s tCommand = ..GitCmdPrefix()
 		
-		if tCommandName = "Clone Repository" {
-			
-			//Don't display clone command with password
-			s tDisplay=0
-			
-			s tFolder = ##class(%File).ParentDirectoryName(..RepoFolder())
+		if tCommandName = "Clone Repository" || 1 {
 			s tRepoFolder = ..RepoFolder()
-			s tSC = ##class(%File).CreateDirectoryChain(tRepoFolder)
-			if 'tSC $$$ThrowOnError(..MakeError("unable to create folder: "_tRepoFolder))
-			
-			//For clone only, execute command at one level up from repofolder
-			s tCommand = "git -C "_tFolder
-			s tPassword = $REPLACE(pSettings(tCommandName),"""","\""")
-			s tPassword = $ZCVT(tPassword,"O","URL")
-			s tCommand = tCommand_" clone """_..RepoProtocol()_"://"_..UserName()_":"_tPassword_"@"_..RepoURL()_""""
-			
-			s tSC = ..RunCmd(tCommand,.pOutput,tDisplay) $$$ThrowOnError(tSC)
-			
-			s pOutput($I(pOutput))="-------------------------------"
-						
-			s tCommand = ..GitCmdPrefix()
-			s tCommand = tCommand_" config user.name """_..PersonName()_""""
-			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			s tCommand = ..GitCmdPrefix()
-			s tCommand = tCommand_" config user.email """_..PersonEmail()_""""
-			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			s tCommand = ..GitCmdPrefix()
-			s tCommand = tCommand_" checkout master"
-			
+			s tRepoURL =..RepoURL()
+			s tGitPrefix = ..GitCmdPrefix()
+			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(tRepoFolder,tRepoURL,tGitPrefix,.pOutput)
 		} elseif tCommandName = "Status" {
 			s tCommand = tCommand_" status"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName="Switch to Branch" {
 			s tCommand = tCommand_" checkout "_pSettings(tCommandName)
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "ListDiff" {
 			//ListDiff compares the current HEAD (last commit on current branch) to a target branch.  Used to evaluate completeness of release branch.
 			s tCommand = tCommand_" diff --name-only HEAD "_pSettings(tCommandName)
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Commit" {
 			s tCommand = tCommand_" commit -m """_$TR(pSettings(tCommandName),"'","")_""""
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 	//disabling the auto push at this time
 #;			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 #;			s pOutput($I(pOutput))="-------------------------------"
@@ -357,10 +337,13 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 #;			s tCommand = tCommand_" push"
 		} elseif tCommandName = "Pull" {
 			s tCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Add" {
 			s tCommand = tCommand_" add ."
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Push" {
 			s tCommand = tCommand_" push"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Create Feature Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
@@ -369,6 +352,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Create Release Branch" {
 			//switch to release base branch and pull it, in prep for diff with feature branch
 			//The release base branch is the int branch for the first target environment for deployment
@@ -391,6 +375,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCherryPickCommits,.pOutput) $$$ThrowOnError(tSC)
 						
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Create Bugfix Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
@@ -399,6 +384,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Pull from int/dev" {
 
 			//Pull just to ensure the release branch base is up to date locally before creating release branch
@@ -406,6 +392,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 
 			s tCommand = tCommand_" merge origin/int/dev"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Pull from Team" {
 			
 			//Pull just to ensure the release branch base is up to date locally before creating release branch
@@ -413,6 +400,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 
 			s tCommand = tCommand_" merge origin/"_..TeamBranch()
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Diff with Team" {
 			
 			s tCurrentBranch = ..CurrentBranch()
@@ -433,7 +421,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s pOutput($I(pOutput))=""
 			//Diff compares the current HEAD (last commit on current branch) to a target branch.  Used to evaluate completeness of release branch.
 			s tCommand = tCommand_" diff --name-only HEAD "_..TeamBranch()
-
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Request Merge to Team Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
@@ -452,7 +440,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the feature branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Request Merge to Release Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
@@ -473,7 +461,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the bug fix branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Request Merge to int/dev Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
@@ -492,7 +480,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the team branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Re-create Team Branch" {
 			
 			//Checkout the team branch to delete it
@@ -519,16 +507,17 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			s tCommand = tCommand_" push --set-upstream origin "_..TeamBranch()
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Load Branch" {
 			//a git command is expected, so just set it to status
 			s tCommand = tCommand_" status"
 			
 			s tSC = ..LoadBranchLocal(.pOutput) $$$ThrowOnError(tSC)
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 		}
 		
-		s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
+ //		s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 				
 	} catch e {
 		//s tSC = e.AsStatus()
