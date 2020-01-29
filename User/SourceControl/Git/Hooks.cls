@@ -49,6 +49,9 @@ XData Menu
 <MenuItem Name="%Separator" Separator="true"/>
 <!--<MenuItem Name="Resolve Merge Conflicts" Save = "001"/>-->
 <MenuItem Name="Load Branch" Save = "001"/>
+<MenuItem Name="%Separator" Separator="true"/>
+<MenuItem Name="Pull SourceControl Utility Changes" Save = "001"/>
+<MenuItem Name="Load SourceControl Utility Changes" Save = "001"/>
 </Menu>
 
 </MenuBase>
