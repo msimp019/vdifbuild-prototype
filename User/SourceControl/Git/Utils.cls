@@ -1377,17 +1377,18 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		
 		//LoadDir is .xml only - do we need to switch to ImportDir to handle csp files?
 		s (tErrors,tLoaded)=""
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xml","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xsl","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.cls","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.mac","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.lut","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.hl7","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.inc","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		
+		//Must add handling for CSP files!
 		
 		
 	} catch e {
-		//s tSC = e.AsStatus()
-		//w !,e.DisplayString()
+		s tSC = e.AsStatus()
+		w !,e.DisplayString()
 	}
 	
 	for i=1:1:tOutput {
@@ -1480,9 +1481,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 			//s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			
 			s tInternalName = tItem
-			s tItemExtension = $P(tInternalName,".",$LENGTH(tInternalName,"."))
-			s tInternalName = $REPLACE(tInternalName,"."_tItemExtension,"."_$ZCVT(tItemExtension,"U"))
-			if $ZCVT($E(tInternalName,1,4),"U")'="CSP/" {
+			if $TR($ZCVT($E(tInternalName,1,4),"U"),"\","/")'="CSP/" {
+				s tItemExtension = $P(tInternalName,".",$LENGTH(tInternalName,"."))
+				s tInternalName = $REPLACE(tInternalName,"."_tItemExtension,"."_$ZCVT(tItemExtension,"U"))
 				s tInternalName = $TR(tInternalName,"/",".")
 			}
 			if tInternalName="" Continue
@@ -1497,13 +1498,15 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		If '$D(tContentsList) $$$ThrowStatus($$$ERROR($$$GeneralError,"No items were found for deployment."))
 		
+		//The changed files have been copied to a temp directory.
+		//the csp files have already been copied to the target csp folders
+		//Load the changed files from the temp directory here
 		s (tErrors,tLoaded)=""
-		//s tSC = $System.OBJ.ImportDir(tTempDir,"*.xml","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
-		//s tSC = $System.OBJ.ImportDir(tTempDir,"*.xsl","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.inc","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		
 		
 		s tProjectName = $TR(pEnvironmentBranch,"/","")
