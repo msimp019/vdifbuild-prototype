@@ -298,6 +298,8 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	
+	m ^XABS=pSettings
+	return 1
 	Try {
 		
 		s tCommandName = $O(pSettings(""))
