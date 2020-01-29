@@ -1443,15 +1443,30 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
-		s tLoadList = ""
+		//Create a temp folder to temporarily hold the new files, so that they may be imported from that directory to VABUILD
+		//An alternate approach would be to provide a comma delimited list of files, but since the list could exceed max size, the folder approach is implemented
 		s tTempFileName = ##class(%File).TempFilename()
 		s tTempName = $P(##class(%File).GetFilename(tTempFileName),".",1)
 		s tTempDir = ##class(%File).GetDirectory(tTempFileName)_tTempName_"/"
+		s tSC = ##class(%File).CreateDirectoryChain(tTempDir,.tCreateDirOutput)
+		if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not create directory: "_tTempDir_" with error value: "_tCreateDirOutput))
+		
+		//Now, loop through the list of changes files and copy them from the Git repo folder to the Temp folder
 		for i=1:1:tImportList {
 			s tItem=tImportList(i)
+			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
 			s tFullFilename = ..RepoFolder()_tItem
 			s tFilename = ##Class(%File).GetFilename(tFullFilename)
-			s tTargetFullFilename = tTempDir_tFilename
+			
+			// files that are imported and compiled will be copied to temp folder
+			// csp files will be handled differently
+			If tFullFilename '[ "/csp/" {
+				s tTargetFullFilename = tTempDir_tFilename
+			} else {
+				//If the file path indicates it is a csp file, it is copied directly to the csp folder of the VABUILD instance
+				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
+			}
+
 			s tSC = ##class(%File).CopyFile(tFullFilename,tTargetFullFilename,,.tCopyOutput)
 			if 'tSC {
 				$$$ThrowStatus($$$ERROR($$$GeneralError,"File copy from: "_tFullFilename_" to: "_tTargetFullFilename_" failed with value: "_tCopyOutput))
@@ -1459,7 +1474,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 			
 			//s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			
-			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
 			s tInternalName = tItem
 			if tExtension = "xml" {
 				s tInternalName = $REPLACE(tInternalName,".xml","")
@@ -1478,8 +1492,8 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		//s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
 		
 		s (tErrors,tLoaded)=""
-		s tSC = $System.OBJ.ImportDir(tTempDir,"*.xml","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
-		s tSC = $System.OBJ.ImportDir(tTempDir,"*.xsl","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		//s tSC = $System.OBJ.ImportDir(tTempDir,"*.xml","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		//s tSC = $System.OBJ.ImportDir(tTempDir,"*.xsl","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
