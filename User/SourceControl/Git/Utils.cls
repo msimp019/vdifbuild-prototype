@@ -1448,8 +1448,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tTempFileName = ##class(%File).TempFilename()
 		s tTempName = $P(##class(%File).GetFilename(tTempFileName),".",1)
 		s tTempDir = ##class(%File).GetDirectory(tTempFileName)_tTempName_"/"
-		s tSC = ##class(%File).CreateDirectoryChain(tTempDir,.tCreateDirOutput)
-		if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not create directory: "_tTempDir_" with error value: "_tCreateDirOutput))
 		
 		//Now, loop through the list of changes files and copy them from the Git repo folder to the Temp folder
 		for i=1:1:tImportList {
@@ -1467,6 +1465,13 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
 			}
 
+			//First verify the directory exists - if it is a csp folder it very well may not.  Also the first time a file is copied to the temp folder it will not exist
+			if '##class(%File).DirectoryExists(##class(%File).GetDirectory(tTargetFullFilename)) {
+				s tSC = ##class(%File).CreateDirectoryChain(##class(%File).GetDirectory(tTargetFullFilename),.tCreateDirOutput)
+				if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not create directory: "_tTempDir_" with error value: "_tCreateDirOutput))
+			}
+			
+			//Now, copy the file
 			s tSC = ##class(%File).CopyFile(tFullFilename,tTargetFullFilename,,.tCopyOutput)
 			if 'tSC {
 				$$$ThrowStatus($$$ERROR($$$GeneralError,"File copy from: "_tFullFilename_" to: "_tTargetFullFilename_" failed with value: "_tCopyOutput))
