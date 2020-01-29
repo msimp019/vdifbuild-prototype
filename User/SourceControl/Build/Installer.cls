@@ -73,6 +73,7 @@ ClassMethod SetProductionName() As %Status
 		
 	} catch e {
 		s tSC = e.AsStatus()
+		w !, e.DisplayString()
 	}
 	Quit tSC
 }
@@ -126,6 +127,10 @@ ClassMethod CreateCSPApplications() As %Status
 		s tCSPProp("NameSpace")=tBuildNamespace
 		s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/xslt/")
 		s tCSPProp("InbndWebServicesEnabled")=1
+		
+		w !,"Debug write before modifying csp app"
+		zw tCSPProp
+		
 		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
 		$$$ThrowOnError(tSC)
 		
@@ -134,6 +139,7 @@ ClassMethod CreateCSPApplications() As %Status
 		
 	} catch e {
 		s tSC = e.AsStatus()
+		w !, e.DisplayString()
 	}
 	Quit tSC
 }
