@@ -710,21 +710,16 @@ ClassMethod ExternalName(name As %String) As %String
 	    s tBackslash = "/"
     }
     
-    // lower case for extensions
+    //lower case for extensions
     #dim extension As %String = $ZCVT($P(name,".",$L(name,".")),"L")
     s $P(name,".",$L(name,".")) = extension
     
-    // we shall put classes in different folders
-    //if extension = "cls" {
-        s name = $TR( $P(name,".", 1, $L(name,".")-1), ".", tBackslash)_"."_extension
-    //}
+    //Replace dots in class name with slashes to create subfolders, except the last dot which is the extension
+    s name = $TR( $P(name,".", 1, $L(name,".")-1), ".", tBackslash)_"."_extension
     
-    // we shall delete csp-app from csp files
+    //remove the leading backslash from csp files
     if $E(name, 1) = tBackslash {
         s $E(name, 1) = ""
-    }
-    if $P(name, tBackslash, 1) = "csp" {
-        s $P(name, tBackslash, 1, 2) = "csp"
     }
 
 	// put all items into a subfolder 

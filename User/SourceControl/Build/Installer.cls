@@ -89,6 +89,7 @@ ClassMethod CreateCSPApplications() As %Status
 		s tBuildNamespace = "VABUILD"
 		
 		//Ensure HSCUSTOM html and services csp applications exist, create if not
+		Kill tCSPProp
 		s tCSPApp="/csp/healthshare/hscustom/services"
 		s tExists=##class(Security.Applications).Exists(tCSPApp)
 		if 'tExists {
@@ -101,6 +102,7 @@ ClassMethod CreateCSPApplications() As %Status
 		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
 		$$$ThrowOnError(tSC)
 		
+		Kill tCSPProp
 		s tCSPApp="/csp/healthshare/hscustom"
 		s tExists=##class(Security.Applications).Exists(tCSPApp)
 		if 'tExists {
@@ -113,16 +115,17 @@ ClassMethod CreateCSPApplications() As %Status
 		$$$ThrowOnError(tSC)
 		
 		//Ensure /csp/xslt csp application exists, create if not
+		Kill tCSPProp
 		s tCSPApp="/csp/xslt"
 		s tExists=##class(Security.Applications).Exists(tCSPApp)
 		if 'tExists {
 			s tSC=##class(Security.Applications).Copy("/csp/healthshare/ensemble",tCSPApp,"xslt files")
 			w !,tSC
-			s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/xslt/")
-			s tCSPProp("InbndWebServicesEnabled")=1
 		}
 		//modify /csp/xslt to namespace HSCUSTOM always
 		s tCSPProp("NameSpace")=tBuildNamespace
+		s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/xslt/")
+		s tCSPProp("InbndWebServicesEnabled")=1
 		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
 		$$$ThrowOnError(tSC)
 		
