@@ -1480,12 +1480,11 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 			//s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			
 			s tInternalName = tItem
-			if tExtension = "xml" {
-				s tInternalName = $REPLACE(tInternalName,".xml","")
-			}
 			s tItemExtension = $P(tInternalName,".",$LENGTH(tInternalName,"."))
 			s tInternalName = $REPLACE(tInternalName,"."_tItemExtension,"."_$ZCVT(tItemExtension,"U"))
-			s tInternalName = $TR(tInternalName,"/",".")
+			if $ZCVT($E(tInternalName,1,4),"U")'="CSP/" {
+				s tInternalName = $TR(tInternalName,"/",".")
+			}
 			if tInternalName="" Continue
 			
 			Set tContentsList(tInternalName)=""
