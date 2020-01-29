@@ -1496,6 +1496,8 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		//But concern is whether the tLoadList may become too large?
 		//s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
 		
+		If '$D(tContentsList) $$$ThrowStatus($$$ERROR($$$GeneralError,"No items were found for deployment."))
+		
 		s (tErrors,tLoaded)=""
 		//s tSC = $System.OBJ.ImportDir(tTempDir,"*.xml","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		//s tSC = $System.OBJ.ImportDir(tTempDir,"*.xsl","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
@@ -1519,6 +1521,8 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 	} catch e {
 		s tSC = e.AsStatus()
 		w !,"Error Building Deploy Package: "_e.DisplayString()
+		w !,"Current ContentList:",!
+		zw tContentsList
 		s tDeployStatus = 0
 	}
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
