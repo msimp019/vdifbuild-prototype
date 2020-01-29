@@ -29,17 +29,17 @@ expect "${namespace}>" { send "Write ##class(User.SourceControl.Build.Installer)
 
 expect "1\r\n${namespace}>" { send "ZN \"${buildNamespace}\"\r" } timeout { puts "timed out"; exit 1 }
 
-#expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.cls\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
+expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.cls\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
 
-#expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.mac\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
+expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.mac\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
 
-#expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$cmName\",\"$cmEmail\",\"\",\"$gitURL\")\r" } timeout { puts "timed out"; exit 1 }
+expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$cmName\",\"$cmEmail\",\"\",\"$gitURL\")\r" } timeout { puts "timed out"; exit 1 }
 
-#expect "1\r\n$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadBranch(\"$gitEnvBranch\",\"$gitPassword\")\r" } timeout { puts "timed out"; exit 1 }
+expect "1\r\n$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadBranch(\"$gitEnvBranch\",\"$gitPassword\")\r" } timeout { puts "timed out"; exit 1 }
 
-#expect "1\r\n$buildNamespace>" { send "Write ##class(Ens.Config.Credentials).SetCredential(\"HS_Credentials\",\"$userName\",\"$password\",1)\r" } timeout { puts "timed out"; exit 1 }
+expect "1\r\n$buildNamespace>" { send "Write ##class(Ens.Config.Credentials).SetCredential(\"HS_Credentials\",\"$userName\",\"$password\",1)\r" } timeout { puts "timed out"; exit 1 }
 
-#expect "1\r\n$buildNamespace>"  { send "H\r"} timeout { puts "timed out"; exit 1 }
+expect "1\r\n$buildNamespace>"  { send "H\r"} timeout { puts "timed out"; exit 1 }
 
 exit 0
 

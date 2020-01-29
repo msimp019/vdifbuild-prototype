@@ -187,6 +187,12 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 	
 	Try {
 		s tNS = $NAMESPACE
+		
+		//This class is loaded to VABUILD during the configure build namespace step
+		//But this configuration is intended for the deployment targets only
+		//So, if the current namespace is VABUILD, we don't want to run this config
+		If tNS = "VABUILD" Quit
+		
 		zn "HSCUSTOM"
 		
 		s ^%SYS("HealthShare","Instances","HSCUSTOM","Type") ="Foundation"
