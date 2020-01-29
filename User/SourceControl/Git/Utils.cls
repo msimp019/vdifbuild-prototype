@@ -1531,7 +1531,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 			If $TR($ZCVT($E(tItem,1,4),"U"),"\","/")="CSP/" {
 				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
 				s tSC = ##class(%File).Delete(tTargetFullFilename,.tDeleteFilesOutput)
-				if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not delete file: "_tTargetFullFilename_" with error value: "_tDeleteFilesOutput))
+				//if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not delete file: "_tTargetFullFilename_" with error value: "_tDeleteFilesOutput))
 			} 
 		}
 		
