@@ -1444,9 +1444,21 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		$$$ThrowOnError(tSC)
 		
 		s tLoadList = ""
+		s tTempFileName = ##class(%File).TempFilename()
+		s tTempName = $P(##class(%File).GetFilename(tTempFileName),".",1)
+		s tTempDir = ##class(%File).GetDirectory(tTempFileName)_tTempName_"/"
 		for i=1:1:tImportList {
 			s tItem=tImportList(i)
-			s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
+			s tFullFilename = ..RepoFolder()_tItem
+			s tFilename = ##Class(%File).GetFilename(tFullFilename)
+			s tTargetFullFilename = tTempDir_tFilename
+			s tSC = ##class(%File).CopyFile(tFullFilename,tTargetFullFilename,,.tCopyOutput)
+			if 'tSC {
+				$$$ThrowStatus($$$ERROR($$$GeneralError,"File copy from: "_tFullFilename_" to: "_tTargetFullFilename_" failed with value: "_tCopyOutput))
+			}
+			
+			//s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
+			
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
 			s tInternalName = tItem
 			if tExtension = "xml" {
@@ -1463,7 +1475,16 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		//a load list is compiled here so that multiple files can be loaded at one so that class DependsOn statements can be honored
 		//But concern is whether the tLoadList may become too large?
-		s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
+		//s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
+		
+		s (tErrors,tLoaded)=""
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.xml","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.xsl","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		
 		
 		s tProjectName = $TR(pEnvironmentBranch,"/","")
 		s tProductionName = ""
