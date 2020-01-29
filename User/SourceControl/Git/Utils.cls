@@ -1459,7 +1459,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 			
 			// files that are imported and compiled will be copied to temp folder
 			// csp files will be handled differently
-			If tFullFilename '[ "/csp/" {
+			If $TR($ZCVT($E(tItem,1,4),"U"),"\","/")'="CSP/" {
 				s tTargetFullFilename = tTempDir_tFilename
 			} else {
 				//If the file path indicates it is a csp file, it is copied directly to the csp folder of the VABUILD instance
@@ -1519,6 +1519,21 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		$$$ThrowOnError(tSC)
 
 		w !, "Deploy Package built and exported to: "_pFilename
+		
+		//Now clean up the temp folder where the changed files were loaded from and remove the csp files
+		s tSC = ##class(%File).Delete(tTempDir_"*",.tDeleteFilesOutput)
+		if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not delete files from: "_tTempDir_" with error value: "_tDeleteFilesOutput))
+		s tSC = ##class(%File).RemoveDirectory(tTempDir,.tDeleteDirOutput)
+		if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not remove directory: "_tTempDir_" with error value: "_tDeleteDirOutput))
+		
+		//Now remove the csp files
+		for i=1:1:tImportList {
+			If $TR($ZCVT($E(tItem,1,4),"U"),"\","/")="CSP/" {
+				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
+				s tSC = ##class(%File).Delete(tTargetFullFilename,.tDeleteFilesOutput)
+				if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not delete file: "_tTargetFullFilename_" with error value: "_tDeleteFilesOutput))
+			} 
+		}
 		
 	} catch e {
 		s tSC = e.AsStatus()
