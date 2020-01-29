@@ -303,22 +303,19 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 
 ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
-	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
 	m ^XABS=pSettings
-	return 1
 	Try {
 		
 		s tCommandName = $O(pSettings(""))
-		
 		s tCommand = ..GitCmdPrefix()
 		
 		if tCommandName = "Clone Repository" || 1 {
 			s tRepoFolder = ..RepoFolder()
 			s tRepoURL =..RepoURL()
 			s tGitPrefix = ..GitCmdPrefix()
-			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(tRepoFolder,tRepoURL,tGitPrefix,.pOutput)
+			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,tRepoFolder,tRepoURL,tGitPrefix,.pOutput)
 		} elseif tCommandName = "Status" {
 			s tCommand = tCommand_" status"
 			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
