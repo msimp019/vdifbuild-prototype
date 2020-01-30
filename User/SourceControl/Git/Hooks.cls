@@ -98,20 +98,22 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 			s Enabled = 0
 		} elseif name = "Resolve Merge Conflicts" {
 			s Enabled = 1
-		} elseif (##class(User.SourceControl.Git.Utils).IsDevelopMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"INT/DEV")>0) {
+		} elseif (($F($ZCVT(tCurrentBranch,"U"),"INT/DEV")>0) && ##class(User.SourceControl.Git.Utils).IsDevelopMenuGitCommand(name)) {
 			s Enabled = 1
-		} elseif (##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) {
+		} elseif (($F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0) && ##class(User.SourceControl.Git.Utils).IsFeatureMenuGitCommand(name)) {
 			s Enabled = 1
-		} elseif (##class(User.SourceControl.Git.Utils).IsReleaseMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) {
+		} elseif ($F($ZCVT(tCurrentBranch,"U"),"RELEASE/")>0) && (##class(User.SourceControl.Git.Utils).IsReleaseMenuGitCommand(name)) {
 			s Enabled = 1
-		} elseif (##class(User.SourceControl.Git.Utils).IsBugfixMenuGitCommand(name))&&($F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0) {
+		} elseif ($F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0) && (##class(User.SourceControl.Git.Utils).IsBugfixMenuGitCommand(name)) {
 			s Enabled = 1
-		} elseif (##class(User.SourceControl.Git.Utils).IsTeamMenuGitCommand(name))&&(tCurrentBranch=##class(User.SourceControl.Git.Utils).TeamBranch()) {
+		} elseif (tCurrentBranch=##class(User.SourceControl.Git.Utils).TeamBranch()) && (##class(User.SourceControl.Git.Utils).IsTeamMenuGitCommand(name)) {
 			s Enabled = 1
 		} elseif ##class(User.SourceControl.Git.Utils).IsMenuGitCommand(name) {
 			//This else should be last to allow for special handling of menugitcommands as needed
 			s Enabled = 1
-		} 
+		} elseif ##class(User.SourceControl.Git.Utils).IsDevopsUpdateCommand(name){
+			set Enabled=1
+		}
 #;		else {
 #;			s Enabled = -1
 #;		}
