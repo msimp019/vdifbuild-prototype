@@ -1669,6 +1669,8 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	
 		//Compile latest service and run projection on server
 		set atelierBaseEndpoint="http://"_pTargetHost_":"_pTargetPort_"/api/atelier"
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.EnsDeploy.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.ImportObject.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
 		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.ImportRequest.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
