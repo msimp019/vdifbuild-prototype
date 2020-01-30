@@ -24,7 +24,7 @@ Parameter RepoURL = "github.com/msimp019/vdif-prototype.git";
 
 Parameter DevopsURL = "github.com/msimp019/vdifbuild-prototype.git";
 
-Parameter DevopsBranch = "int/dev";
+Parameter DevopsBranch = "feature/update-sourcecontrol";
 
 /// If equals to 0 all tortoise-git calls are asynchronous<br/>
 /// Otherwise calls are synchronous and import is automatically executed after git calls.
