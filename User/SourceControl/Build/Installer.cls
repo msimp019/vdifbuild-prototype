@@ -1,15 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2018.1.1 (Build 312_1_18859U)" ts="2019-12-24 07:44:12">
-<Class name="User.SourceControl.Build.Installer">
-<IncludeCode>%occInclude</IncludeCode>
-<TimeChanged>65371,27833.964688</TimeChanged>
-<TimeCreated>65353,48485.614728</TimeCreated>
+Include %occInclude
 
-<XData name="VABUILD">
-<Description>
-Application Definition</Description>
-<XMLNamespace>INSTALLER</XMLNamespace>
-<Data><![CDATA[
+Class User.SourceControl.Build.Installer
+{
+
+/// Application Definition
+XData VABUILD [ XMLNamespace = INSTALLER ]
+{
 <Manifest>
 <!-- Do some setup -->
 <Var Name="NAMESPACE" Value="VABUILD"/>
@@ -34,6 +30,7 @@ Application Definition</Description>
 
 <ClassMapping Package="HS.Local.VA"    				From="${NAMESPACE}"/>
 <ClassMapping Package="User.SourceControl.Git"    	From="${NAMESPACE}"/>
+<ClassMapping Package="User.SourceControl.Deploy"  	From="${NAMESPACE}"/>
 <ClassMapping Package="HS"    						From="HSLIB"/>
 
 </Configuration>
@@ -51,25 +48,16 @@ Application Definition</Description>
 
 </Namespace>
 </Manifest>
-]]></Data>
-</XData>
+}
 
-<Method name="setup">
-<Internal>1</Internal>
-<ClassMethod>1</ClassMethod>
-<CodeMode>objectgenerator</CodeMode>
-<FormalSpec><![CDATA[&pVars,pLogLevel:%Integer=3,pInstaller:%Installer.Installer,pLogger:%Installer.AbstractLogger]]></FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod setup(ByRef pVars, pLogLevel As %Integer = 3, pInstaller As %Installer.Installer, pLogger As %Installer.AbstractLogger) As %Status [ CodeMode = objectgenerator, Internal ]
+{
     #; Let our XGL document generate code for this method. 
     Quit ##class(%Installer.Manifest).%Generate(%compiledclass, %code, "VABUILD")
-]]></Implementation>
-</Method>
+}
 
-<Method name="SetProductionName">
-<ClassMethod>1</ClassMethod>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod SetProductionName() As %Status
+{
 	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -87,13 +75,10 @@ Application Definition</Description>
 		s tSC = e.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
+}
 
-<Method name="CreateCSPApplications">
-<ClassMethod>1</ClassMethod>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod CreateCSPApplications() As %Status
+{
 	
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -145,7 +130,7 @@ Application Definition</Description>
 		s tSC = e.AsStatus()
 	}
 	Quit tSC
-]]></Implementation>
-</Method>
-</Class>
-</Export>
+}
+
+}
+
