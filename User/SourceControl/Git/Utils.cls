@@ -338,7 +338,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		s tGitPrefix = ..GitCmdPrefix()
 		s tDevopsGitPrefix = ..DevopsGitCmdPrefix()
 		
-		if tCommandName = "Clone Repository" || 1 {
+		if tCommandName = "Clone Repository" {
 			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..RepoFolder(),..RepoURL(),tGitPrefix,.pOutput) $$$ThrowOnError(tSC)
 			zw tSC
 			zw pOutput
@@ -685,13 +685,12 @@ ClassMethod UserAction(InternalName As %String, MenuName As %String, ByRef Targe
     #dim menuName As %String = $piece(MenuName,",")
     #dim menuItemName As %String = $piece(MenuName,",",2)
     #dim ec As %Status = $$$OK
-    
     if (menuName = "Source Control Main Menu") {
         if (menuItemName = "Settings") {
             s Action = 2
             #dim defNamespace As %String = ..InstallNamespace()
             Set Target="/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Setting.cls"
-        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) || ..IsBugfixMenuGitCommand(menuItemName) {
+        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) || ..IsBugfixMenuGitCommand(menuItemName) || ..IsDevopsUpdateCommand(menuItemName){
             s Action = 2
             s Target = "/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Dialogue.cls?UserAction="_menuItemName
         } elseif (menuItemName = "Create Release Branch") {
