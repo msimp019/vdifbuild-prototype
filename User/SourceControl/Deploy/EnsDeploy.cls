@@ -34,7 +34,7 @@ ClassMethod RecordBasicContentsInfo(pDeploymentVDOC As %RegisteredObject, Output
 				//The base class sets the csp application as the namespace default, but /csp/xslt files that is not the correct application
 				//Get it from the import file instead
 				Set tCSPApplication = pDeploymentVDOC.GetValueAt("/Export/"_tCount_"/@application")
-				Set:tSCPApplication="" tSCPApplication = $system.CSP.GetDefaultApp($NAMESPACE)
+				Set:tCSPApplication="" tCSPApplication = $system.CSP.GetDefaultApp($NAMESPACE)
 				//***Modification end
 				Set:$E(tCSPApplication,1,1)="/" tCSPApplication = $E(tCSPApplication,2,*)
 				Set tItemName = tCSPApplication_"/"_tItemName
