@@ -23,11 +23,11 @@ XData Menu
 <MenuItem Name="Remove From"/>
 </Menu>
 <Menu Name="Source Control Main Menu" Type="0">
-<MenuItem Name="Settings" />
-<MenuItem Name="Clone Repository" Save = "001"/>
+<MenuItem Name="Adam" />
+<MenuItem Name="Adam" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
-<MenuItem Name="Current Branch" Save = "001"/>
-<MenuItem Name="Switch to Branch" Save = "001"/>
+<MenuItem Name="Adam" Save = "001"/>
+<MenuItem Name="Adam" Save = "001"/>
 <MenuItem Name="Status" Save = "001"/>
 <MenuItem Name="%Separator" Separator="true"/>
 <MenuItem Name="Commit" Save = "001"/>
