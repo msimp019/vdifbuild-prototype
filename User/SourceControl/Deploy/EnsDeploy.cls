@@ -37,8 +37,8 @@ ClassMethod RecordBasicContentsInfo(pDeploymentVDOC As %RegisteredObject, Output
 				Set:tCSPApplication="" tCSPApplication = $system.CSP.GetDefaultApp($NAMESPACE)
 				//***Modification end
 				Set:$E(tCSPApplication,1,1)="/" tCSPApplication = $E(tCSPApplication,2,*)
-				//***Modification to ensure that item name doesn't start with / so that the concat with / doesn't duplicate
-				Set:$E(tItemName,1,1)="/" tItemName = $E(tItemName,2,*)
+				//***Modification to ensure that tCSPApplication name doesn't end with / so that the concat with / doesn't duplicate
+				Set:$E(tCSPApplication,*,*)="/" tCSPApplication = $E(tCSPApplication,1,*-1)
 				//***Modification end
 				Set tItemName = tCSPApplication_"/"_tItemName
 			}
