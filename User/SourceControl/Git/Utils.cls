@@ -330,7 +330,6 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
-	m ^XABS=pSettings
 	Try {
 		
 		s tCommandName = $O(pSettings(""))
@@ -339,18 +338,16 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 		s tDevopsGitPrefix = ..DevopsGitCmdPrefix()
 		
 		if tCommandName = "Clone Repository" {
-			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..RepoFolder(),..RepoURL(),tGitPrefix,.pOutput) $$$ThrowOnError(tSC)
-			zw tSC
-			zw pOutput
+			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..RepoFolder(),..RepoURL(),tGitPrefix,.pOutput) 
+			$$$ThrowOnError(tSC)
 			
-			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..DevopsFolder(),..DevopsURL(),tDevopsGitPrefix,.pOutput) $$$ThrowOnError(tSC)
-			zw tSC
-			zw pOutput
+			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..DevopsFolder(),..DevopsURL(),tDevopsGitPrefix,.pOutput) 
+			$$$ThrowOnError(tSC)
 			
 			s tCommand = tDevopsGitPrefix_" checkout "_..DevopsBranch()
 			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		
-			} elseif tCommandName = "Status" {
+		} elseif tCommandName = "Status" {
 			s tCommand = tCommand_" status"
 			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName="Switch to Branch" {
@@ -546,22 +543,14 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tCommand = tCommand_" push --set-upstream origin "_..TeamBranch()
 			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Load Branch" {
-			//a git command is expected, so just set it to status
-			s tCommand = tCommand_" status"
-			
 			s tSC = ..LoadBranchLocal(..RepoFolder(),.pOutput) $$$ThrowOnError(tSC)
-			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 		} elseif tCommandName = "Pull SourceControl Utility Changes" {
 			s tCommand = tDevopsGitPrefix_" pull --rebase"
 			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Load SourceControl Utility Changes" {
-			//a git command is expected, so just set it to status
-			s tCommand = tDevopsGitPrefix_" status"
-			
+			set pOutput($i(pOutput))="WARNING!  Please restart Studio for all changes to take effect!"
 			s tSC = ..LoadBranchLocal(..DevopsFolder(),.pOutput,..DevopsBranch()_" from "_..DevopsFolder()) $$$ThrowOnError(tSC)
-			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
-			
 			set pOutput($i(pOutput))="WARNING!  Please restart Studio for all changes to take effect!"
 		}
 		
