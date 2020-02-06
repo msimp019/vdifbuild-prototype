@@ -2,6 +2,42 @@
 Class ConfigScripts.Utils
 {
 
+
+ClassMethod GetPreviousSettingValue(key As %String) As %String 
+{
+	set deployId=^Jenkins("config",^Jenkins("config"),"deployId")
+	set value = $get(^Jenkins("config",deployId,key))
+	return value
+}
+
+ClassMethod StorePreviousSettingValue(key As %String, value As %String) as %Status
+{
+	set ^Jenkins("config",^Jenkins("config"),key)=value
+	return $$$OK
+}
+
+ClassMethod StartNewDeploy() As %Status
+{
+	set id = $Increment(^Jenkins("config"))
+	set ^Jenkins("config",id,"type")="deploy"
+	set ^Jenkins("config",id,"$h")=$h
+	return $$$OK
+}
+
+ClassMethod StartNewRollback(name As %String = "" ) As %Integer
+{
+	set id = $Increment(^Jenkins("config"))
+	if (^Jenkins("config",id,"type")'="deploy")
+	{
+		$$$ThrowOnError($$$ERROR($$$GeneralError,"Previous script was not a deploy. Exiting"))
+	}
+
+	set ^Jenkins("config",id,"type")="rollback"
+	set ^Jenkins("config",id,"$h")=$h
+	set ^Jenkins("config",id,"deployId")=id-1
+	return $$$OK
+}
+
 /// This prevents IP addresses being stored on github.  
 /// environment should be one of the following strings: "develop", "sqa2", "sqa1", "preprod", "production"
 /// label: (required) Can be any unique identifier, must be unique across all of vdif. recommend including teamname within identifier.
