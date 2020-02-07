@@ -46,7 +46,7 @@ XData Style
 XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]
 {
 <pane xmlns="http://www.intersystems.com/zen" title="Settings">
-<fieldSet legend="Settings">
+<fieldSet legend="Settings" hidden="true">
 <form labelPosition="left" OnSubmitForm="SubmitForm">
 <spacer height="20"/>
 <text id="userName" name="userName" label="Repository username:" title="BitBucket or other Repo username" required="true" size="100"/>
