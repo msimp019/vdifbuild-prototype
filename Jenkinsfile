@@ -1,6 +1,6 @@
 
 def HS_BuildTargetFolder = '/opt/VABUILD/'
-def HS_BuildInstance = 'HS01'
+def HS_BuildInstance = env.HS_Instance
 def HS_BuildNamespace = 'VABUILD'
 def Git_EnvBranch = env.Git_EnvBranch
 def Git_IntBranch = env.Git_IntBranch
