@@ -8,7 +8,7 @@ set deployFileName			[lindex $argv 2]
 set gitEnvBranch			[lindex $argv 3]
 set gitIntBranch			[lindex $argv 4]
 
-echo csession $environment dU $buildNamespace
+echo "HELLO WORLD"
 spawn csession $environment -U $buildNamespace 
 
 expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).BuildDeployment(\"$deployFileName\",\"$gitEnvBranch\",\"$gitIntBranch\")\r" } timeout { puts "timed out"; exit 1 }
