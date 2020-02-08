@@ -1450,7 +1450,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		s tLoadList = ""
 		for i=1:1:tImportList {
+			zw i
 			s tItem=tImportList(i)
+			zw tItem
 			s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
 			s tInternalName = tItem
@@ -1468,8 +1470,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		//a load list is compiled here so that multiple files can be loaded at one so that class DependsOn statements can be honored
 		//But concern is whether the tLoadList may become too large?
+		zw tLoadList
 		s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
-		
+		zw tSC
 		s tProjectName = $TR(pEnvironmentBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
