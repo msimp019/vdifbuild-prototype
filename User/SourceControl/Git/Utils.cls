@@ -1448,6 +1448,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
+		
+		zw tImportList
+		
 		s tLoadList = ""
 		for i=1:1:tImportList {
 			zw i
