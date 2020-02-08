@@ -1416,6 +1416,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSC = ..RunCmd("git --version",.pVersion) $$$ThrowOnError(tSC)
 		zw pVersion
 		
+		s tSC = ..RunCmd("git",.ggg) $$$ThrowOnError(tSC)
+		zw ggg
+		
 		Kill tSettings
 		s tSettings("Switch to Branch")=pIntegrationBranch
 		Kill tOutput
