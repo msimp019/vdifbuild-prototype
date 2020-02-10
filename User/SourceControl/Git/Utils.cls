@@ -710,21 +710,16 @@ ClassMethod ExternalName(name As %String) As %String
 	    s tBackslash = "/"
     }
     
-    // lower case for extensions
+    //lower case for extensions
     #dim extension As %String = $ZCVT($P(name,".",$L(name,".")),"L")
     s $P(name,".",$L(name,".")) = extension
     
-    // we shall put classes in different folders
-    //if extension = "cls" {
-        s name = $TR( $P(name,".", 1, $L(name,".")-1), ".", tBackslash)_"."_extension
-    //}
+    //Replace dots in class name with slashes to create subfolders, except the last dot which is the extension
+    s name = $TR( $P(name,".", 1, $L(name,".")-1), ".", tBackslash)_"."_extension
     
-    // we shall delete csp-app from csp files
+    //remove the leading backslash from csp files
     if $E(name, 1) = tBackslash {
         s $E(name, 1) = ""
-    }
-    if $P(name, tBackslash, 1) = "csp" {
-        s $P(name, tBackslash, 1, 2) = "csp"
     }
 
 	// put all items into a subfolder 
@@ -1382,17 +1377,18 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		
 		//LoadDir is .xml only - do we need to switch to ImportDir to handle csp files?
 		s (tErrors,tLoaded)=""
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xml","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xsl","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.cls","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.mac","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.lut","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.hl7","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.inc","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		
+		//Must add handling for CSP files!
 		
 		
 	} catch e {
-		//s tSC = e.AsStatus()
-		//w !,e.DisplayString()
+		s tSC = e.AsStatus()
+		w !,e.DisplayString()
 	}
 	
 	for i=1:1:tOutput {
@@ -1448,18 +1444,48 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
 		$$$ThrowOnError(tSC)
 		
-		s tLoadList = ""
+		//Create a temp folder to temporarily hold the new files, so that they may be imported from that directory to VABUILD
+		//An alternate approach would be to provide a comma delimited list of files, but since the list could exceed max size, the folder approach is implemented
+		s tTempFileName = ##class(%File).TempFilename()
+		s tTempName = $P(##class(%File).GetFilename(tTempFileName),".",1)
+		s tTempDir = ##class(%File).GetDirectory(tTempFileName)_tTempName_"/"
+		
+		//Now, loop through the list of changes files and copy them from the Git repo folder to the Temp folder
 		for i=1:1:tImportList {
 			s tItem=tImportList(i)
-			s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
-			s tInternalName = tItem
-			if tExtension = "xml" {
-				s tInternalName = $REPLACE(tInternalName,".xml","")
+			s tFullFilename = ..RepoFolder()_tItem
+			s tFilename = ##Class(%File).GetFilename(tFullFilename)
+			
+			// files that are imported and compiled will be copied to temp folder
+			// csp files will be handled differently
+			If $TR($ZCVT($E(tItem,1,4),"U"),"\","/")'="CSP/" {
+				s tTargetFullFilename = tTempDir_tFilename
+			} else {
+				//If the file path indicates it is a csp file, it is copied directly to the csp folder of the VABUILD instance
+				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
 			}
-			s tItemExtension = $P(tInternalName,".",$LENGTH(tInternalName,"."))
-			s tInternalName = $REPLACE(tInternalName,"."_tItemExtension,"."_$ZCVT(tItemExtension,"U"))
-			s tInternalName = $TR(tInternalName,"/",".")
+
+			//First verify the directory exists - if it is a csp folder it very well may not.  Also the first time a file is copied to the temp folder it will not exist
+			if '##class(%File).DirectoryExists(##class(%File).GetDirectory(tTargetFullFilename)) {
+				s tSC = ##class(%File).CreateDirectoryChain(##class(%File).GetDirectory(tTargetFullFilename),.tCreateDirOutput)
+				if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not create directory: "_tTempDir_" with error value: "_tCreateDirOutput))
+			}
+			
+			//Now, copy the file
+			s tSC = ##class(%File).CopyFile(tFullFilename,tTargetFullFilename,,.tCopyOutput)
+			if 'tSC {
+				$$$ThrowStatus($$$ERROR($$$GeneralError,"File copy from: "_tFullFilename_" to: "_tTargetFullFilename_" failed with value: "_tCopyOutput))
+			}
+			
+			//s tLoadList = tLoadList_$S(tLoadList="":"",1:"*")_..RepoFolder()_tItem
+			
+			s tInternalName = tItem
+			if $TR($ZCVT($E(tInternalName,1,4),"U"),"\","/")'="CSP/" {
+				s tItemExtension = $P(tInternalName,".",$LENGTH(tInternalName,"."))
+				s tInternalName = $REPLACE(tInternalName,"."_tItemExtension,"."_$ZCVT(tItemExtension,"U"))
+				s tInternalName = $TR(tInternalName,"/",".")
+			}
 			if tInternalName="" Continue
 			
 			Set tContentsList(tInternalName)=""
@@ -1468,7 +1494,20 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		//a load list is compiled here so that multiple files can be loaded at one so that class DependsOn statements can be honored
 		//But concern is whether the tLoadList may become too large?
-		s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
+		//s tSC = $System.OBJ.Load(tLoadList,"cbfk") $$$ThrowOnError(tSC)
+		
+		If '$D(tContentsList) $$$ThrowStatus($$$ERROR($$$GeneralError,"No items were found for deployment."))
+		
+		//The changed files have been copied to a temp directory.
+		//the csp files have already been copied to the target csp folders
+		//Load the changed files from the temp directory here
+		s (tErrors,tLoaded)=""
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.inc","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		
 		
 		s tProjectName = $TR(pEnvironmentBranch,"/","")
 		s tProductionName = ""
@@ -1481,9 +1520,27 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 
 		w !, "Deploy Package built and exported to: "_pFilename
 		
+		//Now clean up the temp folder where the changed files were loaded from and remove the csp files
+		s tSC = ##class(%File).Delete(tTempDir_"*",.tDeleteFilesOutput)
+		if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not delete files from: "_tTempDir_" with error value: "_tDeleteFilesOutput))
+		s tSC = ##class(%File).RemoveDirectory(tTempDir,.tDeleteDirOutput)
+		if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not remove directory: "_tTempDir_" with error value: "_tDeleteDirOutput))
+		
+		//Now remove the csp files
+		for i=1:1:tImportList {
+			s tItem=tImportList(i)
+			If $TR($ZCVT($E(tItem,1,4),"U"),"\","/")="CSP/" {
+				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
+				s tSC = ##class(%File).Delete(tTargetFullFilename,.tDeleteFilesOutput)
+				//if 'tSC $$$ThrowStatus($$$ERROR($$$GeneralError,"Could not delete file: "_tTargetFullFilename_" with error value: "_tDeleteFilesOutput))
+			} 
+		}
+		
 	} catch e {
 		s tSC = e.AsStatus()
 		w !,"Error Building Deploy Package: "_e.DisplayString()
+		w !,"Current ContentList:",!
+		zw tContentsList
 		s tDeployStatus = 0
 	}
 	Quit $C(10)_$CASE(tDeployStatus,1:"SUCCESS",0:"FAILURE",:"")
@@ -1613,6 +1670,8 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 	
 		//Compile latest service and run projection on server
 		set atelierBaseEndpoint="http://"_pTargetHost_":"_pTargetPort_"/api/atelier"
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.EnsDeploy.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.ImportObject.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
 		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.ImportRequest.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
