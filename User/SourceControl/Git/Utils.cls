@@ -1362,6 +1362,13 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		//Set this flag at the start so that the Source Control Hooks will skip doing any source control actions during branch load
 		Set @..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive") = 1
 		
+		s tSC = ..RunCmd("git --version",.pVersion) $$$ThrowOnError(tSC)
+		zw pVersion
+		
+		s tSC = ..RunCmd("git",.ggg) $$$ThrowOnError(tSC)
+		zw ggg
+		
+		
 		s tOutput=""
 		
 		if '..IsNamespaceInGit() {
