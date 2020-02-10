@@ -5,6 +5,7 @@ def HS_BuildNamespace = 'VABUILD'
 def Git_EnvBranch = env.Git_EnvBranch
 def Git_IntBranch = env.Git_IntBranch
 def Git_RepoURL = env.Git_RepoURL
+def Git_Bin = env.Git_Bin
 def HS_Environment = env.HS_Environment
 def CM_Name = env.CM_Name
 def CM_Email = env.CM_Email
@@ -28,7 +29,7 @@ pipeline {
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
 				
-				sh "./buildInstallerNamespace.sh $HS_BuildInstance '${WORKSPACE}' '%SYS' $HS_BuildTargetFolder $HS_BuildNamespace $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_EnvBranch $Git_IntBranch $CM_Name $CM_Email"
+				sh "./buildInstallerNamespace.sh $HS_BuildInstance '${WORKSPACE}' '%SYS' $HS_BuildTargetFolder $HS_BuildNamespace $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_EnvBranch $Git_IntBranch $CM_Name $CM_Email $Git_Bin"
 			}
         }
         stage('Build') {

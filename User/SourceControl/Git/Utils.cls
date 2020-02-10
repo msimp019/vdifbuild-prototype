@@ -128,7 +128,7 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol"))
 /// Returns default git command prefix
 ClassMethod GitCmdPrefix() As %String [ CodeMode = expression ]
 {
-"git -C "_..RepoFolder()
+..GitBinary()_" -C "_..RepoFolder()
 }
 
 /// 8012 because this error has corresponding error message
@@ -145,6 +145,12 @@ ClassMethod NeedSettings() As %Boolean [ CodeMode = expression ]
 ClassMethod InstallNamespace() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%installNamespace"))
+}
+
+/// Returns path for git binary if set, otherwise "git"
+ClassMethod GitBinary() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%gitBinaryLocation"),"git")
 }
 
 ClassMethod CurrentBranch() As %String
@@ -287,6 +293,9 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 	    s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoName())
 	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
 		
+		//Set git install location
+		 s @..InstallNamespaceStorage()@("%user",$USERNAME,"%gitBinaryLocation") = settings("gitBinaryLocation")
+		
 	} catch e {
 		s tSC = e.AsStatus()
 	}
@@ -315,7 +324,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			if 'tSC $$$ThrowOnError(..MakeError("unable to create folder: "_tRepoFolder))
 			
 			//For clone only, execute command at one level up from repofolder
-			s tCommand = "git -C "_tFolder
+			s tCommand = ..GitBinary()_" -C "_tFolder
 			s tPassword = $REPLACE(pSettings(tCommandName),"""","\""")
 			s tPassword = $ZCVT(tPassword,"O","URL")
 			s tCommand = tCommand_" clone """_..RepoProtocol()_"://"_..UserName()_":"_tPassword_"@"_..RepoURL()_""""
@@ -1297,7 +1306,7 @@ ClassMethod TestDialogue(pMenuCommand, pCommandValue = "")
 	}
 }
 
-ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch, pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "") As %Status
+ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch, pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "", pGitBinaryLocation="") As %Status
 {
 	
 	Set tSettings("repoBaseFolder")=pRepoBaseFolder
@@ -1309,6 +1318,7 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	Set:pRepoProtocol'="" tSettings("repoProtocol")=pRepoProtocol
 	Set:pReleaseBranchBase'="" tSettings("releaseBranchBase")=pReleaseBranchBase
 	Set:pInstallNamespace'="" tSettings("installNamespace")=pInstallNamespace
+	Set:pGitBinaryLocation'="" tSettings("gitBinaryLocation")=pGitBinaryLocation
 	
 	Quit ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
@@ -1362,10 +1372,10 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		//Set this flag at the start so that the Source Control Hooks will skip doing any source control actions during branch load
 		Set @..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive") = 1
 		
-		s tSC = ..RunCmd("git --version",.pVersion) $$$ThrowOnError(tSC)
+		s tSC = ..RunCmd(..GitBinary()_" --version",.pVersion) $$$ThrowOnError(tSC)
 		zw pVersion
 		
-		s tSC = ..RunCmd("git",.ggg) $$$ThrowOnError(tSC)
+		s tSC = ..RunCmd(..GitBinary(),.ggg) $$$ThrowOnError(tSC)
 		zw ggg
 		
 		
@@ -1420,10 +1430,10 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 	
 	Try {
 
-		s tSC = ..RunCmd("git --version",.pVersion) $$$ThrowOnError(tSC)
+		s tSC = ..RunCmd(..GitBinary()_" --version",.pVersion) $$$ThrowOnError(tSC)
 		zw pVersion
 		
-		s tSC = ..RunCmd("git",.ggg) $$$ThrowOnError(tSC)
+		s tSC = ..RunCmd(..GitBinary(),.ggg) $$$ThrowOnError(tSC)
 		zw ggg
 		
 		Kill tSettings
