@@ -32,6 +32,8 @@ expect "1\r\n${namespace}>" { send "ZN \"${buildNamespace}\"\r" } timeout { puts
 
 expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.cls\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
 
+expect "$buildNamespace>" { send "write \"$gitBin\""} timeout { puts "timed out"; exit 1 }
+
 expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.mac\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
 
 expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$cmName\",\"$cmEmail\",\"\",\"$gitURL\",,,,\"$gitBin\")\r" } timeout { puts "timed out"; exit 1 }
