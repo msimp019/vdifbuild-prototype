@@ -11,6 +11,8 @@ set targetNamespace			[lindex $argv 5]
 
 spawn csession $environment -U $buildNamespace 
 
+expect "%SYS>" { send "ZN \"${buildNamespace}\"\r" } timeout { puts "timed out"; exit 1 }
+
 expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).DeployRollback(\"$deployFileName\",\"$targetHost\",\"$targetPort\",\"$targetNamespace\")\r" } timeout { puts "timed out"; exit 1 }
 
 expect { 
