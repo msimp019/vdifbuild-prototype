@@ -12,6 +12,8 @@ set HS_Environment			[lindex $argv 6]
 
 spawn csession $environment -U $buildNamespace 
 
+expect "%SYS>" { send "ZN \"${buildNamespace}\"\r" } timeout { puts "timed out"; exit 1 }
+
 expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).Deploy(\"$deployFileName\",\"$targetHost\",\"$targetPort\",\"$targetNamespace\",\"$HS_Environment\")\r" } timeout { puts "timed out"; exit 1 }
 
 expect { 
