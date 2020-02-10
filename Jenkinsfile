@@ -28,7 +28,6 @@ pipeline {
                 sh 'cd "${WORKSPACE}"'
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
-				sh "echo $Git_Bin"
 				sh "./buildInstallerNamespace.sh $HS_BuildInstance '${WORKSPACE}' '%SYS' $HS_BuildTargetFolder $HS_BuildNamespace $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_EnvBranch $Git_IntBranch '$CM_Name' '$CM_Email' $Git_Bin"
 			}
         }
