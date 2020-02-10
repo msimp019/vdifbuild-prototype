@@ -33,7 +33,7 @@ expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace
 
 expect "$buildNamespace>" { send "Do ##class(%SYSTEM.OBJ).ImportDir(\"$workspace\",\"*.mac\",\"ck\",,1)\r" } timeout { puts "timed out"; exit 1 }
 
-expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$cmName\",\"$cmEmail\",\"\",\"$gitURL\")\r" } timeout { puts "timed out"; exit 1 }
+expect "$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadSettings(\"$buildTargetFolder\",\"$gitUserName\",\"$cmName\",\"$cmEmail\",\"\",\"$gitURL\",,,\"$buildNamespace\")\r" } timeout { puts "timed out"; exit 1 }
 
 expect "1\r\n$buildNamespace>" { send "Write ##class(User.SourceControl.Git.Utils).LoadBranch(\"$gitEnvBranch\",\"$gitPassword\")\r" } timeout { puts "timed out"; exit 1 }
 

@@ -47,7 +47,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 				s:tProduction="" tProduction = "NoProduction"
 				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
 				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
-				s tSC = ##class(Ens.Deployment.Deploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
+				s tSC = ##class(User.SourceControl.Deploy.EnsDeploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
 				//Don't throw error here so that we can continue to log output to file and then log file to return - check for error in tSC later
 				
 				
@@ -187,6 +187,12 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 	
 	Try {
 		s tNS = $NAMESPACE
+		
+		//This class is loaded to VABUILD during the configure build namespace step
+		//But this configuration is intended for the deployment targets only
+		//So, if the current namespace is VABUILD, we don't want to run this config
+		If tNS = "VABUILD" Quit
+		
 		zn "HSCUSTOM"
 		
 		s ^%SYS("HealthShare","Instances","HSCUSTOM","Type") ="Foundation"
@@ -195,6 +201,7 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 		zn "%SYS"
 		
 		//Ensure HSCUSTOM html and services csp applications exist, create if not
+		Kill tCSPProp
 		s tCSPApp="/csp/healthshare/hscustom/services"
 		s tExists=##class(Security.Applications).Exists(tCSPApp)
 		if 'tExists {
@@ -207,6 +214,7 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
 		$$$ThrowOnError(tSC)
 		
+		Kill tCSPProp
 		s tCSPApp="/csp/healthshare/hscustom"
 		s tExists=##class(Security.Applications).Exists(tCSPApp)
 		if 'tExists {
@@ -220,16 +228,17 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 		$$$ThrowOnError(tSC)
 		
 		//Ensure /csp/xslt csp application exists, create if not
+		Kill tCSPProp
 		s tCSPApp="/csp/xslt"
 		s tExists=##class(Security.Applications).Exists(tCSPApp)
 		if 'tExists {
 			s tSC=##class(Security.Applications).Copy("/csp/healthshare/ensemble",tCSPApp,"xslt files")
 			w !,tSC
-			s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/xslt/")
-			s tCSPProp("InbndWebServicesEnabled")=1
 		}
 		//modify /csp/xslt to namespace HSCUSTOM always
 		s tCSPProp("NameSpace")="HSCUSTOM"
+		s tCSPProp("Path")=##class(%File).NormalizeDirectory($System.Util.InstallDirectory()_"csp/xslt/")
+		s tCSPProp("InbndWebServicesEnabled")=1
 		s tSC=##class(Security.Applications).Modify(tCSPApp,.tCSPProp)
 		$$$ThrowOnError(tSC)
 		

@@ -29,6 +29,7 @@ pipeline {
                 sh "chmod a+x *.sh"
 				
 				sh "./buildInstallerNamespace.sh $HS_BuildInstance '${WORKSPACE}' '%SYS' $HS_BuildTargetFolder $HS_BuildNamespace $HS_CREDENTIALS_USR $HS_CREDENTIALS_PSW $Git_CREDENTIALS_USR $Git_CREDENTIALS_PSW $Git_RepoURL $Git_EnvBranch $Git_IntBranch $CM_Name $CM_Email"
+
 			}
         }
         stage('Build') {
