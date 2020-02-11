@@ -7,6 +7,7 @@ def Git_IntBranch = env.Git_IntBranch
 def Git_RepoURL = env.Git_RepoURL
 def Git_Bin = env.Git_Bin
 def HS_Environment = env.HS_Environment
+def HS_ServerList = env.HS_ServerList
 def CM_Name = env.CM_Name
 def CM_Email = env.CM_Email
 date = new Date()
@@ -44,7 +45,7 @@ pipeline {
 					def result
 					def countCompleted = 0
 					try {
-						readFile('DeployList.csv').split('\n').each { line, count ->
+						readFile(${HS_ServerList}).split('\n').each { line, count ->
 							def fields = line.split(',')
 							host=fields[0]
 							port=fields[1]
@@ -54,7 +55,7 @@ pipeline {
 							countCompleted = countCompleted + 1
 						}
 					} catch(Exception e) {
-						readFile('DeployList.csv').split('\n').eachWithIndex { line, index ->
+						readFile(${HS_ServerList}).split('\n').eachWithIndex { line, index ->
 							if (index <= countCompleted) { 
 								def fields = line.split(',')
 								host=fields[0]

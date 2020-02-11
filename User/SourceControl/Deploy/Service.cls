@@ -32,9 +32,6 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		OPEN outputfile:"WSN"
 		USE outputfile
 		
-		s tReturn = tReturn_$System.Status.GetErrorText(tSC)_$C(10)
-		zw tReturn
-		s tReturn = ""
 		s tBusinessItems = 0
 		w !,1,!
 		For i=1:1:pRequest.Objects.Count() {
@@ -51,9 +48,10 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 				s:tProduction="" tProduction = "NoProduction"
 				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
 				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
+				w "deploying code"
 				s tSC = ##class(User.SourceControl.Deploy.EnsDeploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
 				//Don't throw error here so that we can continue to log output to file and then log file to return - check for error in tSC later
-				
+				w "done"
 				
 			} elseif $P(tImportObject.Name,"/",5) = "businessitems" {
 				//If the imported item is a deployment package for a business item, do the import to the appropriate namespace after importing all the classes
@@ -75,7 +73,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 					s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
 					s tRollbackFilename = $System.Util.InstallDirectory()_"/mgr/Temp/"_##class(Ens.Util.Time).FormatDateTime("%Y%m%d%H%M%S%N")_"_"_$P(tDeployItemName,"/",7)
 					s tSCDeploy = ##class(Ens.Deployment.Deploy).DeployCode(tFilename,tProduction,1,tRollbackFilename,"C")
-					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSC)
+					if $$$ISERR(tSCDeploy) s err($I(err))=$System.Status.GetErrorText(tSCDeploy)
 				} else {
 					s err($I(err))="File name for deployment not found: "_tFilename CONTINUE
 				}
