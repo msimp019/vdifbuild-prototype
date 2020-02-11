@@ -1367,13 +1367,6 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		//Set this flag at the start so that the Source Control Hooks will skip doing any source control actions during branch load
 		Set @..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive") = 1
 		
-		s tSC = ..RunCmd(..GitBinary()_" --version",.pVersion) $$$ThrowOnError(tSC)
-		zw pVersion
-		
-		s tSC = ..RunCmd(..GitBinary(),.ggg) $$$ThrowOnError(tSC)
-		zw ggg
-		
-		
 		s tOutput=""
 		
 		if '..IsNamespaceInGit() {
@@ -1426,11 +1419,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 	
 	Try {
 
-		s tSC = ..RunCmd(..GitBinary()_" --version",.pVersion) $$$ThrowOnError(tSC)
-		zw pVersion
-		
-		s tSC = ..RunCmd(..GitBinary(),.ggg) $$$ThrowOnError(tSC)
-		zw ggg
 		
 		Kill tSettings
 		s tSettings("Switch to Branch")=pIntegrationBranch
@@ -1475,7 +1463,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		//Now, loop through the list of changes files and copy them from the Git repo folder to the Temp folder
 		for i=1:1:tImportList {
-			zw i
 			s tItem=tImportList(i)
 			s tExtension = $P(tItem,".",$LENGTH(tItem,"."))
 			s tFullFilename = ..RepoFolder()_tItem
