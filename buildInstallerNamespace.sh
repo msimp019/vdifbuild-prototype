@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-set timeout 60
+set timeout 360
 
 set environment   			[lindex $argv 0]
 set workspace     			[lindex $argv 1]
