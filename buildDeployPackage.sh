@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-set timeout 360
+set timeout 60
 
 set environment   			[lindex $argv 0]
 set buildNamespace			[lindex $argv 1]
