@@ -1424,12 +1424,18 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSettings("Switch to Branch")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		w !
+		zw tOutput
+		w !
 		$$$ThrowOnError(tSC)
 		
 		Kill tSettings
 		s tSettings("Pull")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		w !
+		zw tOutput
+		w !
 		$$$ThrowOnError(tSC)
 
 		//Switch to the integration branch in order to do the diff with the source branch
@@ -1437,6 +1443,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSettings("Switch to Branch")=pEnvironmentBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		w !
+		zw tOutput
+		w !
 		$$$ThrowOnError(tSC)
 		
 		//Get the new/changed files in the diff between integration branch and source branch
@@ -1444,6 +1453,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSettings("ListDiff")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		w !
+		zw tOutput
+		w !
 		$$$ThrowOnError(tSC)
 		
 		Merge tImportList = tOutput
@@ -1453,6 +1465,9 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSettings("Switch to Branch")=pIntegrationBranch
 		Kill tOutput
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		w !
+		zw tOutput
+		w !
 		$$$ThrowOnError(tSC)
 		
 		//Create a temp folder to temporarily hold the new files, so that they may be imported from that directory to VABUILD
