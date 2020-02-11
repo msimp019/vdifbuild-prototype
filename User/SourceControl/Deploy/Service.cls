@@ -32,6 +32,9 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		OPEN outputfile:"WSN"
 		USE outputfile
 		
+		s tReturn = tReturn_$System.Status.GetErrorText(tSC)_$C(10)
+		zw tReturn
+		s tReturn = ""
 		s tBusinessItems = 0
 		w !,1,!
 		For i=1:1:pRequest.Objects.Count() {
