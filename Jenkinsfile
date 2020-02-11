@@ -1,5 +1,5 @@
 
-def HS_BuildTargetFolder = '/opt/VABUILD1/'
+def HS_BuildTargetFolder = '/opt/VABUILD/'
 def HS_BuildInstance = env.HS_Instance
 def HS_BuildNamespace = 'VABUILD'
 def Git_EnvBranch = env.Git_EnvBranch
@@ -25,7 +25,7 @@ pipeline {
         stage('Prepare Build Environment') {
             steps {
                 //sh "rm -rf ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
-				//sh "mkdir ${HS_BuildTargetFolder}" //currently not working due to permissions, so I created the folder manually
+				sh "mkdir ${HS_BuildTargetFolder}/*" //currently not working due to permissions, so I created the folder manually
                 sh 'cd "${WORKSPACE}"'
                 // Allow the jenkins user the ability to execute the shell files found in the build folder
                 sh "chmod a+x *.sh"
