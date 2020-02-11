@@ -1364,8 +1364,11 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 	
 	Try {
 		
+		w !,1,!
 		//Set this flag at the start so that the Source Control Hooks will skip doing any source control actions during branch load
 		Set @..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive") = 1
+		
+		w !,2,!
 		
 		s tOutput=""
 		
@@ -1374,16 +1377,22 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 			s tSC=..HandleDialogue(.tSettings,.tOutput)
 			$$$ThrowOnError(tSC)
 		}
+		w !,3,!
 		
 		Kill tSettings
 		s tSettings("Switch to Branch")=pBranch
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		ZW tOutput
 		$$$ThrowOnError(tSC)
 		
+		w !,4,!
 		Kill tSettings
 		s tSettings("Pull")=pBranch
 		s tSC=..HandleDialogue(.tSettings,.tOutput)
+		ZW tOutput
 		$$$ThrowOnError(tSC)
+		
+		w !,5,!
 		
 		//LoadDir is .xml only - do we need to switch to ImportDir to handle csp files?
 		s (tErrors,tLoaded)=""
