@@ -33,8 +33,9 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		USE outputfile
 		
 		s tBusinessItems = 0
-		
+		w !,1,!
 		For i=1:1:pRequest.Objects.Count() {
+			w !,"2a"_i,!
 			s tImportObject=pRequest.Objects.GetAt(i)
 			
 			if tImportObject.Name [ "DeployPackage" {
@@ -56,8 +57,9 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 				s tBusinessItems($I(tBusinessItems))=tImportObject.Name
 			}
 		}
-		
+		w !,3,!
 		For i=1:1:tBusinessItems {
+			w !,"4a"_I,!
 			s tDeployItemName = tBusinessItems(i)
 			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
 			//check to ensure the target namespace exists on this instance
@@ -77,10 +79,10 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 				ZN tNS
 			}
 		}
-		
+		w !,6,!
 		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
 		do ..RunConfigRoutinesByMethodName(ConfigScripts,"Deploy")
-		
+		w !,7,!
 		CLOSE outputfile
 		
 		s tFile=##class(%FileCharacterStream).%New()
