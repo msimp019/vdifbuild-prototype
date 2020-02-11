@@ -45,7 +45,7 @@ pipeline {
 					def result
 					def countCompleted = 0
 					try {
-						readFile(${HS_ServerList}).split('\n').each { line, count ->
+						readFile('DeployList.csv').split('\n').each { line, count ->
 							def fields = line.split(',')
 							host=fields[0]
 							port=fields[1]
@@ -55,7 +55,7 @@ pipeline {
 							countCompleted = countCompleted + 1
 						}
 					} catch(Exception e) {
-						readFile(${HS_ServerList}).split('\n').eachWithIndex { line, index ->
+						readFile('DeployList.csv').split('\n').eachWithIndex { line, index ->
 							if (index <= countCompleted) { 
 								def fields = line.split(',')
 								host=fields[0]
