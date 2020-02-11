@@ -1375,6 +1375,7 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		if '..IsNamespaceInGit() {
 			s tSettings("Clone Repository")=pPassword
 			s tSC=..HandleDialogue(.tSettings,.tOutput)
+			zw tOutput
 			$$$ThrowOnError(tSC)
 		}
 		w !,3,!
