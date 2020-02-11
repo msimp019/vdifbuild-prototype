@@ -8,7 +8,7 @@ set deployFileName			[lindex $argv 2]
 set gitEnvBranch			[lindex $argv 3]
 set gitIntBranch			[lindex $argv 4]
 
-spawn csession $environment -U $buildNamespace 
+spawn csession $environment -U "%SYS"
 
 expect "%SYS>" { send "ZN \"${buildNamespace}\"\r" } timeout { puts "timed out"; exit 1 }
 

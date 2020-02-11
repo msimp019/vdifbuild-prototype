@@ -9,7 +9,7 @@ set targetHost				[lindex $argv 3]
 set targetPort				[lindex $argv 4]
 set targetNamespace			[lindex $argv 5]
 
-spawn csession $environment -U $buildNamespace 
+spawn csession $environment -U "%SYS" 
 
 expect "%SYS>" { send "ZN \"${buildNamespace}\"\r" } timeout { puts "timed out"; exit 1 }
 
