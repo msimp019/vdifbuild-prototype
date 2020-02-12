@@ -294,7 +294,7 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
 		
 		//Set git install location
-		 s:settings("gitBinaryLocation")'="" @..InstallNamespaceStorage()@("%user",$USERNAME,"%gitBinaryLocation") = settings("gitBinaryLocation")
+		 s @..InstallNamespaceStorage()@("%user",$USERNAME,"%gitBinaryLocation") = settings("gitBinaryLocation")
 		
 	} catch e {
 		s tSC = e.AsStatus()
@@ -1316,8 +1316,11 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	zw pGitBinaryLocation
 	if (pGitBinaryLocation'="") && (pGitBinaryLocation'="null")
 	{
-		w "setit"
 		set tSettings("gitBinaryLocation")=pGitBinaryLocation
+	}
+	else
+	{
+		set tSettings("gitBinaryLocation")="git"
 	}
 	Quit ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
