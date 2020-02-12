@@ -1538,7 +1538,10 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		//the csp files have already been copied to the target csp folders
 		//Load the changed files from the temp directory here
 		s (tErrors,tLoaded)=""
-		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) 
+		zw tLoaded
+		zw tErrors
+		$$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
