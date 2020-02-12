@@ -1313,6 +1313,7 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	Set:pRepoProtocol'="" tSettings("repoProtocol")=pRepoProtocol
 	Set:pReleaseBranchBase'="" tSettings("releaseBranchBase")=pReleaseBranchBase
 	Set:pInstallNamespace'="" tSettings("installNamespace")=pInstallNamespace
+	zw pGitBinaryLocation
 	if (pGitBinaryLocation'="") && (pGitBinaryLocation'="null")
 	{
 		set tSettings("gitBinaryLocation")=pGitBinaryLocation
@@ -1375,6 +1376,7 @@ ClassMethod LoadBranch(pBranch, pPassword) As %Status
 		s tOutput=""
 		
 		if '..IsNamespaceInGit() {
+			w !,"inside",!
 			s tSettings("Clone Repository")=pPassword
 			s tSC=..HandleDialogue(.tSettings,.tOutput)
 			zw tOutput
