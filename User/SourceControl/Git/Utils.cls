@@ -1313,8 +1313,10 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	Set:pRepoProtocol'="" tSettings("repoProtocol")=pRepoProtocol
 	Set:pReleaseBranchBase'="" tSettings("releaseBranchBase")=pReleaseBranchBase
 	Set:pInstallNamespace'="" tSettings("installNamespace")=pInstallNamespace
-	Set:pGitBinaryLocation'="" tSettings("gitBinaryLocation")=pGitBinaryLocation
-	
+	if (pGitBinaryLocation'="") && (pGitBinaryLocation'="null")
+	{
+		set tSettings("gitBinaryLocation")=pGitBinaryLocation
+	}
 	Quit ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
 
