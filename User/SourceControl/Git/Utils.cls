@@ -1556,7 +1556,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.lut","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.hl7","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
-		
+
 		s tProjectName = $TR(pEnvironmentBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
