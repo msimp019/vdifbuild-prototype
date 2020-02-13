@@ -32,6 +32,8 @@ XData VABUILD [ XMLNamespace = INSTALLER ]
 <ClassMapping Package="User.SourceControl.Git"    	From="${NAMESPACE}"/>
 <ClassMapping Package="User.SourceControl.Deploy"  	From="${NAMESPACE}"/>
 <ClassMapping Package="HS"    						From="HSLIB"/>
+<ClassMapping Package="HSAA"    					From="HSAALIB"/>
+<ClassMapping Package="HSMOD"    					From="HSLIB"/>
 
 </Configuration>
 
