@@ -1560,9 +1560,10 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tProjectName = $TR(pEnvironmentBranch,"/","")
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
-		
+		w !,"a",!
 		Set tProductionClassIncluded = 0
 		Set tComments = "Deploy Package created programatically."
+		w !,"b",!
 		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,pFilename,tProductionName,tComments,tProductionClassIncluded)
 		$$$ThrowOnError(tSC)
 
@@ -1586,6 +1587,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 	} catch e {
 		s tSC = e.AsStatus()
+		zw tSC
 		w !,"Error Building Deploy Package: "_e.DisplayString()
 		w !,"Current ContentList:",!
 		zw tContentsList
