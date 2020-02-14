@@ -1477,6 +1477,8 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		$$$ThrowOnError(tSC)
 		
 		Merge tImportList = tOutput
+		zw tImportList
+		m ^XABS=tOutput
 		
 		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
 		Kill tSettings
@@ -1587,7 +1589,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 	} catch e {
 		s tSC = e.AsStatus()
-		zw tSC
 		w !,"Error Building Deploy Package: "_e.DisplayString()
 		w !,"Current ContentList:",!
 		zw tContentsList
