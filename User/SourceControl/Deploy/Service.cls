@@ -37,6 +37,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		s ^XABS=1
 		For i=1:1:pRequest.Objects.Count() {
 			w !,"2a"_i,!
+			s ^XABS(2)=i
 			s tImportObject=pRequest.Objects.GetAt(i)
 			
 			if tImportObject.Name [ "DeployPackage" {
@@ -62,7 +63,8 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		w !,3,!
 		s ^XABS=3
 		For i=1:1:tBusinessItems {
-			w !,"4a"_I,!
+			w !,"4a"_i,!
+			s ^XABS(4)=i
 			s tDeployItemName = tBusinessItems(i)
 			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
 			//check to ensure the target namespace exists on this instance
