@@ -1478,7 +1478,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		
 		Merge tImportList = tOutput
 		zw tImportList
-		m ^XABS=tOutput
 		
 		//Now that we have the list, switch to the source branch and load the files, ensuring each compile
 		Kill tSettings
