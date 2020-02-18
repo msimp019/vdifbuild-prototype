@@ -54,6 +54,15 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
 				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
 				s ^XABS(2)=i_"f"
+				s ^XABS("tDeployFilename")=tDeployFilename
+				s ^XABS("tProduction")=tProduction
+				s ^XABS("tCreateRollBack")=tCreateRollBack
+				s ^XABS("tRollbackFile")=tRollbackFile
+				s ^XABS("tWhereToLog")=tWhereToLog
+				s ^XABS("tLogFile")=tLogFile
+				s ^XABS("tAllowDeployToSource")=tAllowDeployToSource
+				s ^XABS("tAutoRevert")=tAutoRevert
+				
 				s tSC = ##class(User.SourceControl.Deploy.EnsDeploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
 				//Don't throw error here so that we can continue to log output to file and then log file to return - check for error in tSC later
 				w "done"
