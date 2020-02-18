@@ -1532,6 +1532,11 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 				s tInternalName = $REPLACE(tInternalName,"."_tItemExtension,"."_$ZCVT(tItemExtension,"U"))
 				s tInternalName = $TR(tInternalName,"/",".")
 			}
+			
+			if $Piece(tInternalName,".")="HSCUSTOM"
+			{
+				set tInternalName=$Piece(tInternalName,".",2,*)
+			}
 			if tInternalName="" Continue
 			
 			Set tContentsList(tInternalName)=""
