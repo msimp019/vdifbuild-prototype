@@ -1736,6 +1736,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.Projection.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
 		$$$ThrowOnError(tSC)
 		
+		w !,1,!
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
 		s tResponse="-------------------------------"_$C(10)
@@ -1749,7 +1750,7 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		s tDeployStream = ##class(%FileCharacterStream).%New()
 		s tDeployStream.Filename = pFilename
 		
-		
+		w !,2,!
 		s tImportObject = ##class(User.SourceControl.Deploy.ImportObject).%New()
 		s tSC = tImportObject.ObjectStream.CopyFrom(tDeployStream) $$$ThrowOnError(tSC)
 		s tImportObject.Name = ##class(%File).GetFilename(pFilename)
@@ -1759,10 +1760,12 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		Set tServiceClient.Location="http://"_pTargetHost_":"_pTargetPort_"/csp/healthshare/"_$ZCVT(pTargetNamespace,"L")_"/services/User.SourceControl.Deploy.Service.cls"
 		//Set tServiceClient.SSLConfiguration = tConfig.SSLConfig
 		Set tServiceClient.Timeout = 300
+		w !,3,!
 		Set tSC=tServiceClient.WSSecurityLogin(tCredentials.Username,tCredentials.Password) $$$ThrowOnError(tSC)
-
+		w !,4,!
 
 		Set tResponse = tServiceClient.Deploy(pHSEnvironment,tImportRequest,.tDeployStatus)
+		w !,5,!
 		
 	} catch e {
 		if $ZERROR["<ZSOAP>" {
