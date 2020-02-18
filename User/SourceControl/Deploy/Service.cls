@@ -189,7 +189,7 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 	#dim e As %Exception.AbstractException
 	
 	Try {
-		write "Hello World"
+		write "Hello World123"
 		return $$$OK
 		s tNS = $NAMESPACE
 		
