@@ -1775,6 +1775,10 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
         }
 		s tResponse="-------------------------------"_$C(10)
 		s tResponse=tResponse_"Error deploying to "_pTargetHost_":"_pTargetPort_" = "_$System.Status.GetErrorText(tSC)_$C(10)
+		zw pHSEnvironment
+		zw tImportRequest
+		zw tDeployStatus
+		
 		s tResponse=tResponse_"-------------------------------"_$C(10)
 		
 		s tDeployStatus = 0
