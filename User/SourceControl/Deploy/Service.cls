@@ -34,6 +34,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		
 		s tBusinessItems = 0
 		w !,1,!
+		s ^XABS=1
 		For i=1:1:pRequest.Objects.Count() {
 			w !,"2a"_i,!
 			s tImportObject=pRequest.Objects.GetAt(i)
@@ -59,6 +60,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 			}
 		}
 		w !,3,!
+		s ^XABS=3
 		For i=1:1:tBusinessItems {
 			w !,"4a"_I,!
 			s tDeployItemName = tBusinessItems(i)
@@ -81,9 +83,11 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 			}
 		}
 		w !,6,!
+		s ^XABS=6
 		set ConfigScripts={}.%FromJSON(pRequest.ConfigScriptsJSON)
 		do ..RunConfigRoutinesByMethodName(ConfigScripts,"Deploy")
 		w !,7,!
+		s ^XABS=8
 		CLOSE outputfile
 		
 		s tFile=##class(%FileCharacterStream).%New()
