@@ -6,7 +6,6 @@ Class User.SourceControl.Deploy.EnsDeploy Extends Ens.Deployment.Deploy
 /// and generate the unique ItemName.
 ClassMethod RecordBasicContentsInfo(pDeploymentVDOC As %RegisteredObject, Output pDeployDetails) As %Status
 {
-	s ^XABS("")=$g(^XABS(""))+1
 	s ^XABS("ens")=1
 	Set tSC = $$$OK, tRemoveLocation = ""
 	Set tExtConversion("Class")="CLS"
@@ -83,7 +82,7 @@ ClassMethod RecordBasicContentsInfo(pDeploymentVDOC As %RegisteredObject, Output
 		s ^XABS("ens")=4_"m"_tCount
 		Set tSC = ex.AsStatus()
 	}
-	s ^XABS("","ensst")=tSC 
+	s ^XABS("ensst")=tSC 
 	Quit tSC
 }
 
