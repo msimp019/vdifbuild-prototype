@@ -141,6 +141,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		s ^XABS(12)=tReturn
 		s pDeployStatus = 0
 	}
+	s ^XABS("deploy")=tReturn
 	Quit tReturn
 }
 
