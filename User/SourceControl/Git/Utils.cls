@@ -1557,7 +1557,6 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.inc","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) 
-		zw tLoaded
 		zw tErrors
 		$$$ThrowOnError(tSC)
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.mac","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)

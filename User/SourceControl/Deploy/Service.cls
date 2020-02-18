@@ -189,6 +189,8 @@ ClassMethod ConfigureHSCUSTOM() As %Status
 	#dim e As %Exception.AbstractException
 	
 	Try {
+		write "Hello World"
+		return $$$OK
 		s tNS = $NAMESPACE
 		
 		//This class is loaded to VABUILD during the configure build namespace step
