@@ -37,34 +37,39 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		s ^XABS=1
 		For i=1:1:pRequest.Objects.Count() {
 			w !,"2a"_i,!
-			s ^XABS(2)=i
+			s ^XABS(2)=i_"a"
 			s tImportObject=pRequest.Objects.GetAt(i)
-			
+			s ^XABS(2)=i_"b"
 			if tImportObject.Name [ "DeployPackage" {
+				s ^XABS(2)=i_"c"
 				s tDeployFilename = ##class(%File).TempFilename("deploy")
 				s tDeployFile = ##class(%FileCharacterStream).%New()
 				s tDeployFile.Filename = tDeployFilename
+				s ^XABS(2)=i_"c"
 				s tSC = tDeployFile.CopyFromAndSave(tImportObject.ObjectStream) $$$ThrowOnError(tSC)
-				
+				s ^XABS(2)=i_"d"
 				s tProduction = $G(^Ens.Configuration("csp","LastProduction"))
 				s:tProduction="" tProduction = "NoProduction"
+				s ^XABS(2)=i_"e"
 				Do ##class(Ens.Deployment.Utils).GenerateFileNames(tDeployFilename,.tRollbackFile,.tLogFile,.tReportFile)
 				Set tCreateRollBack = 1, tAllowDeployToSource = 1 ,tAutoRevert = 1, tWhereToLog = "LC"
-
+				s ^XABS(2)=i_"f"
 				s tSC = ##class(User.SourceControl.Deploy.EnsDeploy).DeployCode(tDeployFilename,tProduction,tCreateRollBack,tRollbackFile,tWhereToLog,tLogFile,tAllowDeployToSource,tAutoRevert)
 				//Don't throw error here so that we can continue to log output to file and then log file to return - check for error in tSC later
 				w "done"
-				
+				s ^XABS(2)=i_"g"
 			} elseif $P(tImportObject.Name,"/",5) = "businessitems" {
+				s ^XABS(2)=i_"h"
 				//If the imported item is a deployment package for a business item, do the import to the appropriate namespace after importing all the classes
 				s tBusinessItems($I(tBusinessItems))=tImportObject.Name
+				s ^XABS(2)=i_"i"
 			}
 		}
 		w !,3,!
 		s ^XABS=3
 		For i=1:1:tBusinessItems {
 			w !,"4a"_i,!
-			s ^XABS(4)=i
+			s ^XABS(4)=i_"a"
 			s tDeployItemName = tBusinessItems(i)
 			s tTargetNamespace = $ZCVT($P(tDeployItemName,"/",6),"U")
 			//check to ensure the target namespace exists on this instance
