@@ -1554,7 +1554,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		//Load the changed files from the temp directory here
 		s (tErrors,tLoaded)=""
 		
-		s tSC = $System.OBJ.ImportDir(tTempDir,"*.ro","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
+		s tSC = $System.OBJ.ImportDir(tTempDir,"*.inc","cbfk",.tErrors,1,.tLoaded) $$$ThrowOnError(tSC)
 		
 		s tSC = $System.OBJ.ImportDir(tTempDir,"*.cls","cbfk",.tErrors,1,.tLoaded) 
 		zw tLoaded
