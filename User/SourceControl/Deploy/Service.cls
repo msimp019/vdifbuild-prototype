@@ -152,7 +152,7 @@ ClassMethod RunConfigRoutinesByMethodName(ConfigScripts As %DynamicObject, pMeth
 		set iter=ConfigScripts.%GetIterator()
 		while iter.%GetNext(.i,.script)
 		{
-			set command="do "_pMethod_"^"_script_"(""EnvironmentParams"")"
+			set command="do "_pMethod_"^"_script_"()"
 			write !!,"Executing script:"
 			zw command
 			XECUTE command
