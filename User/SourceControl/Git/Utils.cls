@@ -1700,6 +1700,7 @@ ClassMethod ConfigScriptsFromImportRequest(pFilename As %String) As %DynamicArra
 		s tSC = ##class(Ens.Deployment.Deploy).GetProjectContents(pFilename,tDeploymentVDOC,.pTargetProduction,.tDeployDetails)
 		$$$ThrowOnError(tSC)
 		
+		m ^XXABS = tDeployDetails
 		s ConfigScripts=[]
 		s tItemName = ""
 		For { s tItemName = $O(tDeployDetails("Items",tItemName)) Q:tItemName=""
