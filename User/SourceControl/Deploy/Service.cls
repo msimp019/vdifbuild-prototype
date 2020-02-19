@@ -131,6 +131,22 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		} 
 		s ^XABS=11
 	} catch e {
+		try {
+			CLOSE outputfile
+			
+			s tFile=##class(%FileCharacterStream).%New()
+			s tFile.Filename=outputfile
+			
+			s tReturn="Loading import request to namespace "_$NAMESPACE_" on "_##class(%SYS.System).GetNodeName()_":"_##class(%SYS.System).GetInstanceName()_$C(10)
+			s ^XABS=9
+			While 'tFile.AtEnd {
+				s tReturn=tReturn_tFile.ReadLine()_$C(10)
+			}
+			
+			d tFile.Clear()
+			
+		}
+		catch {}
 		s ^XABS(12)=12
 		if $ZERROR["<ZSOAP>" {
             Set tSC=%objlasterror
