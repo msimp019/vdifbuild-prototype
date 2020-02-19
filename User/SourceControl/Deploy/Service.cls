@@ -131,7 +131,7 @@ Method Deploy(pHSEnvironment As %String = "", pRequest As User.SourceControl.Dep
 		} 
 		s ^XABS=11
 	} catch e {
-		s ^XABS=12
+		s ^XABS(12)=12
 		if $ZERROR["<ZSOAP>" {
             Set tSC=%objlasterror
         } else {
