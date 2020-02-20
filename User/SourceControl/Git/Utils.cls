@@ -1735,7 +1735,8 @@ ClassMethod Deploy(pFilename As %String, pTargetHost As %String, pTargetPort As 
 		$$$ThrowOnError(tSC)
 		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"User.SourceControl.Deploy.Projection.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
 		$$$ThrowOnError(tSC)
-		
+		set tSC = ##class(User.SourceControl.Deploy.Bootstrap).CompileUsingAtelierEndpoint(atelierBaseEndpoint,"ConfigScripts.Utils.cls","HSCUSTOM",tCredentials.Username,tCredentials.Password)
+		$$$ThrowOnError(tSC)
 		w !,1,!
 		s tImportRequest = ##class(User.SourceControl.Deploy.ImportRequest).%New()
 		
