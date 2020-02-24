@@ -11,7 +11,7 @@ ClassMethod CloneRepository(ByRef pSettings,tRepoFolder,tRepoURL,tGitPrefix, ByR
 	s tSC = ##class(%File).CreateDirectoryChain(tRepoFolder)
 	if 'tSC $$$ThrowOnError(..MakeError("unable to create folder: "_tRepoFolder))
 	//For clone only, execute command at one level up from repofolder
-	s tCommand = "git -C "_tFolder
+	s tCommand = ..GitBinary()_" -C "_tFolder
 	s tPassword = $REPLACE(pSettings(tCommandName),"""","\""")
 	s tPassword = $ZCVT(tPassword,"O","URL")
 	s tCommand = tCommand_" clone """_..RepoProtocol()_"://"_..UserName()_":"_tPassword_"@"_tRepoURL_""""
