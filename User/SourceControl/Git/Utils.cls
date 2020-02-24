@@ -1502,15 +1502,21 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 			s tFullFilename = ..RepoFolder()_tItem
 			s tFilename = ##Class(%File).GetFilename(tFullFilename)
 			
-			// files that are imported and compiled will be copied to temp folder
-			// csp files will be handled differently
-			If $TR($ZCVT($E(tItem,1,4),"U"),"\","/")'="CSP/" {
-				s tTargetFullFilename = tTempDir_i_tFilename  // include number to avoid file name collisions
-			} else {
-				//If the file path indicates it is a csp file, it is copied directly to the csp folder of the VABUILD instance
-				s tTargetFullFilename = $System.Util.InstallDirectory()_tItem
+			if $P(tItem,"/",1)'="HSCUSTOM"
+			{
+				Continue
 			}
-
+			elseif ($P(tItem,"/",2)="csp")   
+			{
+				//If the file path indicates it is a csp file, it is copied directly to the csp folder of the VABUILD instance
+				s tTargetFullFilename = $System.Util.InstallDirectory()_$P(tItem,"/",2,*)
+			}
+			else 
+			{
+				// files that are imported and compiled will be copied to temp folder
+				s tTargetFullFilename = tTempDir_i_tFilename  // include number to avoid file name collisions
+			}
+			
 			//First verify the directory exists - if it is a csp folder it very well may not.  Also the first time a file is copied to the temp folder it will not exist
 			if '##class(%File).DirectoryExists(##class(%File).GetDirectory(tTargetFullFilename)) {
 				s tSC = ##class(%File).CreateDirectoryChain(##class(%File).GetDirectory(tTargetFullFilename),.tCreateDirOutput)
