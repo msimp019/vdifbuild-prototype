@@ -14,7 +14,7 @@ Parameter RESOURCE = "AH_SourceControl";
 /// Page title
 Property PageTitle As %ZEN.Datatype.caption [ InitialExpression = {$$$TextHTML("Source Control")} ];
 
-Parameter NoDialogueActions = ",Status,Pull,Push,Add,Pull from int/dev,Pull from Team,Diff with Team,Load Branch,Re-create Team Branch,";
+Parameter NoDialogueActions = ",Status,Pull,Push,Add,Pull from int/dev,Pull from Team,Diff with Team,Load Branch,Re-create Team Branch,Pull SourceControl Utility Changes,Load SourceControl Utility Changes,";
 
 /// This XML block defines the contents of this page.
 XData detailPane [ XMLNamespace = "http://www.intersystems.com/zen" ]

@@ -20,7 +20,11 @@ Parameter ReleaseBranchBase = "int/sqa2c";
 
 Parameter RepoProtocol = "https";
 
-Parameter RepoURL = "github.com/msimp019/vdifbuild-prototype.git";
+Parameter RepoURL = "github.com/msimp019/vdif-prototype.git";
+
+Parameter DevopsURL = "github.com/msimp019/vdifbuild-prototype.git";
+
+Parameter DevopsBranch = "int/dev";
 
 /// If equals to 0 all tortoise-git calls are asynchronous<br/>
 /// Otherwise calls are synchronous and import is automatically executed after git calls.
@@ -43,6 +47,8 @@ Parameter GitReleaseMenuItems = ",Pull,Create Bugfix Branch,";
 
 Parameter GitBugfixMenuItems = ",Commit,Push,Pull,Request Merge to Release Branch,";
 
+Parameter DevopsUpdateMenuItems = ",Pull SourceControl Utility Changes,Load SourceControl Utility Changes,";
+
 /// RC: Removed %Blame,
 Parameter GitContextMenuItems = ",";
 
@@ -57,13 +63,16 @@ ClassMethod InstallNamespaceStorage() As %String [ CodeMode = expression ]
 $Replace(..#Storage,"^","^["""_$G(@..#Storage@("%user",$USERNAME,"%installNamespace"),..#InstallNamespace)_"""]")
 }
 
-/// Returns root temp folder
 ClassMethod RepoFolder() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder"))
 }
 
-/// Returns root temp folder
+ClassMethod DevopsFolder() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%devopsFolder"))
+}
+
 ClassMethod IsLoadBranchActive() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%loadBranchActive"))
@@ -90,36 +99,41 @@ ClassMethod TeamBranch() As %String [ CodeMode = expression ]
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch"))
 }
 
+ClassMethod DevopsBranch() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%devopsBranch"))
+}
+
 ClassMethod ReleaseBranchBase() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%releaseBranchBase"))
 }
 
-/// Returns root temp folder
 ClassMethod RepoURL() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoURL"))
 }
 
-/// Returns root temp folder
+ClassMethod DevopsURL() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%devopsURL"))
+}
+
 ClassMethod RepoAPI() As %String [ CodeMode = expression ]
 {
 "api."_$P(..RepoURL(),"/",1)_"/repos/"_$P(..RepoURL(),"/",2)_"/"_$P($P(..RepoURL(),"/",3),".",1)_"/"
 }
 
-/// Returns root temp folder
 ClassMethod RepoBaseFolder() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder"))
 }
 
-/// Returns root temp folder
-ClassMethod RepoName() As %String [ CodeMode = expression ]
+ClassMethod RepoNameFromURL(RepoURL) As %String [ CodeMode = expression ]
 {
-$P($P(..RepoURL(),"/",$L(..RepoURL(),"/")),".",1)
+$P($P(RepoURL,"/",$L(RepoURL,"/")),".",1)
 }
 
-/// Returns root temp folder
 ClassMethod RepoProtocol() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol"))
@@ -129,6 +143,12 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol"))
 ClassMethod GitCmdPrefix() As %String [ CodeMode = expression ]
 {
 ..GitBinary()_" -C "_..RepoFolder()
+}
+
+/// Returns default git command prefix
+ClassMethod DevopsGitCmdPrefix() As %String [ CodeMode = expression ]
+{
+"git -C "_..DevopsFolder()
 }
 
 /// 8012 because this error has corresponding error message
@@ -151,6 +171,12 @@ $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%installNamespace"))
 ClassMethod GitBinary() As %String [ CodeMode = expression ]
 {
 $G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%gitBinaryLocation"),"git")
+}
+
+/// Returns Package to Ignore
+ClassMethod IgnorePackage() As %String [ CodeMode = expression ]
+{
+$G(@..InstallNamespaceStorage()@("%user",$USERNAME,"%ignorePackage"))
 }
 
 ClassMethod CurrentBranch() As %String
@@ -282,16 +308,23 @@ ClassMethod UpdateSettings(ByRef settings) As %Status
 		s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoURL") = $G(settings("repoURL"),..#RepoURL)
 	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoProtocol") = $G(settings("repoProtocol"),..#RepoProtocol)
 	    
+   		s @..InstallNamespaceStorage()@("%user",$USERNAME,"%devopsURL") = $G(settings("devopsURL"),..#DevopsURL)
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%devopsBranch") = $G(settings("devopsBranch"),..#DevopsBranch)
+	    
 	    // set user properties - username and password to start with.
-	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%userName") = settings("userName")
-	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = settings("personName")
-	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = settings("personEmail")
-	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = settings("teamBranch")
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%userName") = $G(settings("userName"),..UserName())
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personName") = $G(settings("personName"),..PersonName())
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%personEmail") = $G(settings("personEmail"),..PersonEmail())
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%teamBranch") = $G(settings("teamBranch"),..TeamBranch())
 	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repoBaseFolder") = ##class(%File).NormalizeDirectory(settings("repoBaseFolder"))
 	    
 	    //Build user's repo folder using the base folder, username, and repository name
-	    s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoName())
+	    s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoNameFromURL(..RepoURL()))
 	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%repositoryFolder") = tFolder
+	    
+	    //Build devops folder using the base folder, username, and repository name
+	    s tFolder = ##class(%File).NormalizeDirectory(..RepoBaseFolder()_$USERNAME_"\"_..RepoNameFromURL(..DevopsURL()))
+	    s @..InstallNamespaceStorage()@("%user",$USERNAME,"%devopsFolder") = tFolder
 		
 		//Set git install location
 		 s @..InstallNamespaceStorage()@("%user",$USERNAME,"%gitBinaryLocation") = settings("gitBinaryLocation")
@@ -306,53 +339,36 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
-	
 	Try {
 		
 		s tCommandName = $O(pSettings(""))
-		
 		s tCommand = ..GitCmdPrefix()
+		s tGitPrefix = ..GitCmdPrefix()
+		s tDevopsGitPrefix = ..DevopsGitCmdPrefix()
 		
 		if tCommandName = "Clone Repository" {
+			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..RepoFolder(),..RepoURL(),tGitPrefix,.pOutput) 
+			$$$ThrowOnError(tSC)
 			
-			//Don't display clone command with password
-			s tDisplay=0
+			set tSC=##class(User.SourceControl.Git.GitCommands).CloneRepository(.pSettings,..DevopsFolder(),..DevopsURL(),tDevopsGitPrefix,.pOutput) 
+			$$$ThrowOnError(tSC)
 			
-			s tFolder = ##class(%File).ParentDirectoryName(..RepoFolder())
-			s tRepoFolder = ..RepoFolder()
-			s tSC = ##class(%File).CreateDirectoryChain(tRepoFolder)
-			if 'tSC $$$ThrowOnError(..MakeError("unable to create folder: "_tRepoFolder))
-			
-			//For clone only, execute command at one level up from repofolder
-			s tCommand = ..GitBinary()_" -C "_tFolder
-			s tPassword = $REPLACE(pSettings(tCommandName),"""","\""")
-			s tPassword = $ZCVT(tPassword,"O","URL")
-			s tCommand = tCommand_" clone """_..RepoProtocol()_"://"_..UserName()_":"_tPassword_"@"_..RepoURL()_""""
-			
-			s tSC = ..RunCmd(tCommand,.pOutput,tDisplay) $$$ThrowOnError(tSC)
-			
-			s pOutput($I(pOutput))="-------------------------------"
-						
-			s tCommand = ..GitCmdPrefix()
-			s tCommand = tCommand_" config user.name """_..PersonName()_""""
+			s tCommand = tDevopsGitPrefix_" checkout "_..DevopsBranch()
 			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			s tCommand = ..GitCmdPrefix()
-			s tCommand = tCommand_" config user.email """_..PersonEmail()_""""
-			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
-			
-			s tCommand = ..GitCmdPrefix()
-			s tCommand = tCommand_" checkout master"
-			
+		
 		} elseif tCommandName = "Status" {
 			s tCommand = tCommand_" status"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName="Switch to Branch" {
 			s tCommand = tCommand_" checkout "_pSettings(tCommandName)
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "ListDiff" {
 			//ListDiff compares the current HEAD (last commit on current branch) to a target branch.  Used to evaluate completeness of release branch.
 			s tCommand = tCommand_" diff --name-only HEAD "_pSettings(tCommandName)
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Commit" {
 			s tCommand = tCommand_" commit -m """_$TR(pSettings(tCommandName),"'","")_""""
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 	//disabling the auto push at this time
 #;			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 #;			s pOutput($I(pOutput))="-------------------------------"
@@ -364,10 +380,13 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 #;			s tCommand = tCommand_" push"
 		} elseif tCommandName = "Pull" {
 			s tCommand = tCommand_" pull --rebase"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Add" {
 			s tCommand = tCommand_" add ."
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Push" {
 			s tCommand = tCommand_" push"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Create Feature Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
@@ -376,6 +395,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Create Release Branch" {
 			//switch to release base branch and pull it, in prep for diff with feature branch
 			//The release base branch is the int branch for the first target environment for deployment
@@ -398,6 +418,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCherryPickCommits,.pOutput) $$$ThrowOnError(tSC)
 						
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Create Bugfix Branch" {
 			//consider adding checkbox to allow push to be optional, but currently it is default behavior
 			//should add syntax checking for branch names
@@ -406,6 +427,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tCreateBranchCommand = tCommand_" checkout -b "_tBranchName
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			s tCommand = tCommand_" push --set-upstream origin "_tBranchName
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Pull from int/dev" {
 
 			//Pull just to ensure the release branch base is up to date locally before creating release branch
@@ -413,6 +435,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 
 			s tCommand = tCommand_" merge origin/int/dev"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Pull from Team" {
 			
 			//Pull just to ensure the release branch base is up to date locally before creating release branch
@@ -420,6 +443,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tPullCommand,.pOutput) $$$ThrowOnError(tSC)
 
 			s tCommand = tCommand_" merge origin/"_..TeamBranch()
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Diff with Team" {
 			
 			s tCurrentBranch = ..CurrentBranch()
@@ -440,7 +464,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s pOutput($I(pOutput))=""
 			//Diff compares the current HEAD (last commit on current branch) to a target branch.  Used to evaluate completeness of release branch.
 			s tCommand = tCommand_" diff --name-only HEAD "_..TeamBranch()
-
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Request Merge to Team Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
@@ -459,7 +483,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the feature branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Request Merge to Release Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
@@ -480,7 +504,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the bug fix branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Request Merge to int/dev Branch" {
 			//First, get the current branch
 			s tCurrentBranch = ..CurrentBranch()
@@ -499,7 +523,7 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 
 			//Now delete the team branch using -D to force the delete
 			s tCommand = tCommand_" branch -D "_tCurrentBranch
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Re-create Team Branch" {
 			
 			//Checkout the team branch to delete it
@@ -526,16 +550,20 @@ ClassMethod HandleDialogue(ByRef pSettings, ByRef pOutput) As %Status
 			s tSC = ..RunCmd(tCreateBranchCommand,.pOutput) $$$ThrowOnError(tSC)
 			
 			s tCommand = tCommand_" push --set-upstream origin "_..TeamBranch()
-			
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 		} elseif tCommandName = "Load Branch" {
-			//a git command is expected, so just set it to status
-			s tCommand = tCommand_" status"
+			s tSC = ..LoadBranchLocal(..RepoFolder(),.pOutput) $$$ThrowOnError(tSC)
 			
-			s tSC = ..LoadBranchLocal(.pOutput) $$$ThrowOnError(tSC)
-			
+		} elseif tCommandName = "Pull SourceControl Utility Changes" {
+			s tCommand = tDevopsGitPrefix_" pull --rebase"
+			s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
+		} elseif tCommandName = "Load SourceControl Utility Changes" {
+			set pOutput($i(pOutput))="WARNING!  Please restart Studio for all changes to take effect!"
+			s tSC = ..LoadBranchLocal(..DevopsFolder(),.pOutput,..DevopsBranch()_" from "_..DevopsFolder()) $$$ThrowOnError(tSC)
+			set pOutput($i(pOutput))="WARNING!  Please restart Studio for all changes to take effect!"
 		}
 		
-		s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
+ //		s tSC = ..RunCmd(tCommand,.pOutput) $$$ThrowOnError(tSC)
 				
 	} catch e {
 		//s tSC = e.AsStatus()
@@ -614,6 +642,11 @@ ClassMethod IsMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = e
 $F(..#GitMenuItems, ","_menuItemName_",") > 0
 }
 
+ClassMethod IsDevopsUpdateCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
+{
+$F(..#DevopsUpdateMenuItems, ","_menuItemName_",") > 0
+}
+
 ClassMethod IsDevelopMenuGitCommand(menuItemName As %String) As %Boolean [ CodeMode = expression ]
 {
 $F(..#GitDevelopMenuItems, ","_menuItemName_",") > 0
@@ -650,13 +683,12 @@ ClassMethod UserAction(InternalName As %String, MenuName As %String, ByRef Targe
     #dim menuName As %String = $piece(MenuName,",")
     #dim menuItemName As %String = $piece(MenuName,",",2)
     #dim ec As %Status = $$$OK
-    
     if (menuName = "Source Control Main Menu") {
         if (menuItemName = "Settings") {
             s Action = 2
             #dim defNamespace As %String = ..InstallNamespace()
             Set Target="/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Setting.cls"
-        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) || ..IsBugfixMenuGitCommand(menuItemName) {
+        } elseif ..IsMenuGitCommand(menuItemName) || ..IsFeatureMenuGitCommand(menuItemName) || ..IsReleaseMenuGitCommand(menuItemName) || ..IsTeamMenuGitCommand(menuItemName) || ..IsBugfixMenuGitCommand(menuItemName) || ..IsDevopsUpdateCommand(menuItemName){
             s Action = 2
             s Target = "/csp/healthshare/"_$ZCVT($NAMESPACE,"L")_"/User.SourceControl.Git.Dialogue.cls?UserAction="_menuItemName
         } elseif (menuItemName = "Create Release Branch") {
@@ -1301,14 +1333,14 @@ ClassMethod TestDialogue(pMenuCommand, pCommandValue = "")
 	}
 }
 
-ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, pTeamBranch, pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "", pGitBinaryLocation="") As %Status
+ClassMethod LoadSettings(pRepoBaseFolder="", pUserName="", pPersonName="", pPersonEmail="", pTeamBranch="", pRepoURL = "", pRepoProtocol = "", pReleaseBranchBase = "", pInstallNamespace = "", pGitBinaryLocation="") As %Status
 {
 	
-	Set tSettings("repoBaseFolder")=pRepoBaseFolder
-	Set tSettings("userName")=pUserName
-	Set tSettings("personName")=pPersonName
-	Set tSettings("personEmail")=pPersonEmail
-	Set tSettings("teamBranch")=pTeamBranch
+	Set:pRepoBaseFolder'="" tSettings("repoBaseFolder")=pRepoBaseFolder
+	Set:pUserName'="" tSettings("userName")=pUserName
+	Set:pPersonName'="" tSettings("personName")=pPersonName
+	Set:pPersonEmail'="" tSettings("personEmail")=pPersonEmail
+	Set:pTeamBranch'="" tSettings("teamBranch")=pTeamBranch
 	Set:pRepoURL'="" tSettings("repoURL")=pRepoURL
 	Set:pRepoProtocol'="" tSettings("repoProtocol")=pRepoProtocol
 	Set:pReleaseBranchBase'="" tSettings("releaseBranchBase")=pReleaseBranchBase
@@ -1325,7 +1357,7 @@ ClassMethod LoadSettings(pRepoBaseFolder, pUserName, pPersonName, pPersonEmail, 
 	Quit ##class(User.SourceControl.Git.Utils).UpdateSettings(.tSettings)
 }
 
-ClassMethod LoadBranchLocal(ByRef pOutput As %String) As %Status
+ClassMethod LoadBranchLocal(pFolder As %String, ByRef pOutput As %String, pBranchName="") As %Status
 {
 	#dim tSC As %Status = $$$OK
 	#dim e As %Exception.AbstractException
@@ -1338,19 +1370,20 @@ ClassMethod LoadBranchLocal(ByRef pOutput As %String) As %Status
 		USE outputfile
 		
 		s (tErrors,tLoaded)=""
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xml","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.xsl","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.cls","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.mac","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.lut","cbfk",.tErrors,1,.tLoaded)
-		s tSC = $System.OBJ.ImportDir(..RepoFolder(),"*.hl7","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(pFolder,"*.xml","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(pFolder,"*.xsl","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(pFolder,"*.cls","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(pFolder,"*.mac","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(pFolder,"*.lut","cbfk",.tErrors,1,.tLoaded)
+		s tSC = $System.OBJ.ImportDir(pFolder,"*.hl7","cbfk",.tErrors,1,.tLoaded)
 		
 		CLOSE outputfile
 		
 		s tFile=##class(%FileCharacterStream).%New()
 		s tFile.Filename=outputfile
 		
-		s pOutput($I(pOutput))="Loading all classes in branch "_..CurrentBranch()_" to namespace "_$NAMESPACE_" on "_##class(%SYS.System).GetNodeName()_":"_##class(%SYS.System).GetInstanceName()_$C(10)
+		s:pBranchName'="" pBranchName=..CurrentBranch()
+		s pOutput($I(pOutput))="Loading all classes in branch "_pBranchName_" to namespace "_$NAMESPACE_" on "_##class(%SYS.System).GetNodeName()_":"_##class(%SYS.System).GetInstanceName()_$C(10)
 		
 		While 'tFile.AtEnd {
 			s pOutput($I(pOutput))=tFile.ReadLine()

@@ -49,6 +49,9 @@ XData Menu
 <MenuItem Name="%Separator" Separator="true"/>
 <!--<MenuItem Name="Resolve Merge Conflicts" Save = "001"/>-->
 <MenuItem Name="Load Branch" Save = "001"/>
+<MenuItem Name="%Separator" Separator="true"/>
+<MenuItem Name="Pull SourceControl Utility Changes" Save = "001"/>
+<MenuItem Name="Load SourceControl Utility Changes" Save = "001"/>
 </Menu>
 
 </MenuBase>
@@ -108,7 +111,9 @@ Method OnSourceMenuItem(name As %String, ByRef Enabled As %String, ByRef Display
 		} elseif ##class(User.SourceControl.Git.Utils).IsMenuGitCommand(name) {
 			//This else should be last to allow for special handling of menugitcommands as needed
 			s Enabled = 1
-		} 
+		} elseif ##class(User.SourceControl.Git.Utils).IsDevopsUpdateCommand(name){
+			set Enabled=1
+		}
 #;		else {
 #;			s Enabled = -1
 #;		}
@@ -207,6 +212,7 @@ Method IsReadOnly(InternalName As %String) As %Boolean
 	s tCurrentBranch = ##class(User.SourceControl.Git.Utils).CurrentBranch()
 	if $F($ZCVT(tCurrentBranch,"U"),"FEATURE/")>0 Set tReadOnly = 0
 	if $F($ZCVT(tCurrentBranch,"U"),"BUGFIX/")>0 Set tReadOnly = 0
+	if ..IsInIgnoredPackage(InternalName) Set tReadOnly = 0
 	
 	Quit tReadOnly
 }
@@ -237,7 +243,7 @@ Method OnBeforeSave(InternalName As %String, Location As %String = "", Object As
 /// just saved. It can be use to export this documement to an external form for example.
 Method OnAfterSave(InternalName As %String, Object As %RegisteredObject = {$$$NULLOREF}) As %Status
 {
-	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() {
+	if ##class(User.SourceControl.Git.Utils).IsNamespaceInGit() && '##class(User.SourceControl.Git.Utils).IsLoadBranchActive() && '..IsInIgnoredPackage(InternalName) {
 		If '##class(User.SourceControl.Git.Utils).IsInSourceControl(InternalName) {
 			//Always add new files to source control by default
 			s tSC = ##class(User.SourceControl.Git.Utils).AddToSourceControl(InternalName)
@@ -269,6 +275,18 @@ Method OnAfterDelete(InternalName As %String) As %Status
 		Quit ##class(User.SourceControl.Git.Utils).DeleteExternalFile(InternalName)
 	}
 	Quit $$$OK
+}
+
+
+ClassMethod IsInIgnoredPackage(InternalName As %String) As %Status
+{
+	set ignoredPackage=##class(User.SourceControl.Git.Utils).IgnorePackage()
+	return:ignoredPackage="" 0
+	if (InternalName[ignoredPackage)
+	{
+		return 1
+	}
+	return 0
 }
 
 }
