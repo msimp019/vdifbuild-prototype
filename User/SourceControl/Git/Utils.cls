@@ -1605,7 +1605,7 @@ ClassMethod BuildDeployment(pFilename, pEnvironmentBranch, pIntegrationBranch) A
 		s tProductionName = ""
 		//Set:(tItemName '[ "||") tItemName = tProductionName_"||"_tItemName
 		w !,"a",!
-		Set tProductionClassIncluded = 0
+		Set tProductionClassIncluded = 0 
 		Set tComments = "Deploy Package created programatically."
 		w !,"b",!
 		Set tSC =##class(Ens.Deployment.Utils).CreateExportPackageFromProjectList(tProjectName,.tContentsList,pFilename,tProductionName,tComments,tProductionClassIncluded)
